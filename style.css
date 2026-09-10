@@ -98,3 +98,12 @@
  .header-right .social-icons{flex-wrap:wrap;justify-content:flex-start}
  .header-status-row{justify-content:flex-start}
 }
+
+/* v9 — marcas sem caixas coloridas */
+.social-icon{background:transparent!important;box-shadow:none!important;border-radius:0!important;width:28px!important;height:28px!important;padding:2px!important;outline:none!important}
+.social-icon img{display:block;width:24px;height:24px;object-fit:contain}
+.social-icon:hover{transform:translateY(-2px) scale(1.08);box-shadow:none!important;opacity:.82}
+.social-icon.portfolio,.social-icon.portfolio-new{background:transparent!important;color:inherit!important}
+.portfolio-mark{display:grid;place-items:center;width:25px;height:25px;font-size:21px;line-height:1}
+:root[data-theme="dark"] .social-icon.github img,
+:root[data-theme="dark"] .social-icon.x img{filter:invert(1)}
