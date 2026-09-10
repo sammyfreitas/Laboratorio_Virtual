@@ -1,0 +1,68 @@
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:#eef2f6;color:#172033}button,select,input{font:inherit}.hidden{display:none!important}
+.home{min-height:100vh;max-width:1180px;margin:auto;padding:52px 28px}.home header{display:flex;justify-content:space-between;gap:30px;align-items:start}.eyebrow{font-size:12px;font-weight:800;letter-spacing:2px;color:#1769aa}.home h1{font-size:44px;margin:8px 0}.home header p{color:#637083;max-width:700px}.safe{background:#dff7e7;color:#18753a;border:1px solid #aee3bd;padding:9px 13px;border-radius:30px;font-size:12px;font-weight:800}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:55px}.lab-card{position:relative;text-align:left;background:white;border:1px solid #dbe2ea;border-radius:18px;padding:28px;min-height:330px;cursor:pointer;box-shadow:0 12px 35px #24354b12;transition:.2s}.lab-card:hover{transform:translateY(-5px);box-shadow:0 18px 40px #24354b25}.lab-card .num{position:absolute;right:20px;top:18px;color:#c7d0db;font-size:30px;font-weight:800}.icon{display:grid;place-items:center;width:60px;height:60px;background:#e8f3ff;color:#1267a9;border-radius:14px;font-size:30px}.blue .icon{background:#e9efff;color:#314eb6}.purple .icon{background:#f2eaff;color:#7044a8}.lab-card h2{margin-top:32px}.lab-card p{color:#68768a;line-height:1.55}.lab-card b{display:block;margin-top:28px;color:#1769aa}.home footer{text-align:center;color:#8994a3;margin-top:55px;font-size:13px}
+.lab{min-height:100vh;padding-bottom:30px}.labtop{height:58px;background:#fff;border-bottom:1px solid #d9e0e8;display:flex;align-items:center;justify-content:space-between;padding:0 24px}.labtop button{border:0;background:transparent;cursor:pointer}.labtop span{font-size:11px;font-weight:800;letter-spacing:1px;color:#18753a}.rufus-window{width:620px;margin:35px auto 15px;background:#f4f4f4;border:1px solid #999;box-shadow:0 20px 60px #17203333}.titlebar{background:#fff;padding:10px 12px;display:flex;justify-content:space-between;border-bottom:1px solid #bbb}.rufus-body{padding:18px}.rufus-body label{font-size:13px;display:block;margin:11px 0 5px}.rufus-body select,.rufus-body input{width:100%;height:34px;border:1px solid #aaa;background:#fff;padding:4px 8px}.row{display:grid;grid-template-columns:1fr 125px;gap:8px}.primary{background:#0879c9!important;color:#fff!important;border:1px solid #0665a8!important}.two{display:grid;grid-template-columns:1fr 1fr;gap:15px}.separator{border-bottom:1px solid #bbb;margin:20px 0 8px;height:10px}.separator span{background:#f4f4f4;padding-right:8px;font-size:12px;color:#555}.check{display:flex!important;align-items:center;gap:7px}.check input{width:auto}.status{font-size:12px;margin-top:18px}.progress{height:18px;border:1px solid #aaa;background:white;margin:5px 0 14px}.progress div{height:100%;width:0;background:#28a745;transition:.35s}.actions{display:flex;justify-content:flex-end;gap:8px}.actions button,.dialog button{padding:7px 18px;background:#eee;border:1px solid #999}.disclaimer{font-size:11px;color:#777;text-align:center}.iso{background:#e6f3ff;border:1px solid #b4d8f4;padding:8px;margin:8px 0}.iso small{display:block;color:#587083}.teacher{width:620px;margin:15px auto;background:#fff8dc;border:1px solid #ead68a;padding:13px 16px;border-radius:8px;font-size:13px}
+.modal{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:99}.dialog{width:390px;background:white;padding:22px;box-shadow:0 20px 80px #0006}.dialog>div{display:flex;justify-content:flex-end;gap:8px}.danger{background:#c9302c!important;color:white!important}
+.dark{background:#111;color:#eee;border:0}.dark button{color:white}.bios-bg{background:#090b12}.bios-screen{font-family:"Courier New",monospace;color:#fff;background:#071d9c;width:min(980px,94vw);min-height:620px;margin:24px auto;border:6px double #d8d8d8;position:relative}.bios-title{text-align:center;background:#aaa;color:#071d9c;padding:8px;font-weight:bold}.bios-title small{font-size:12px}.bios-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:55px 50px}.bios-item,.bios-line{padding:10px 8px}.bios-item.selected,.bios-line.selected{background:#d3d3d3;color:#071d9c}.bios-panel{padding:30px 45px}.bios-panel h3{text-align:center;border-bottom:1px solid #fff;padding-bottom:10px}.bios-help{color:#ffe95a;margin-top:60px}.bios-footer{position:absolute;bottom:0;left:0;right:0;border-top:1px solid white;padding:14px;text-align:center;color:#ffe95a}.toast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#111;color:white;border:1px solid #777;padding:22px 30px;z-index:50;box-shadow:0 10px 60px #0008}
+.uefi-bg{background:radial-gradient(circle at top,#1b3d6d,#07101e 70%);color:#eaf5ff}.uefi-top{background:#07101e;color:white;border-color:#234}.uefi-top button{color:white}.uefi-shell{width:min(1100px,95vw);min-height:650px;margin:25px auto;background:#0c1c2dcc;border:1px solid #4e83ad;box-shadow:0 0 35px #0bf2 inset,0 20px 80px #0008}.uefi-brand{padding:20px 25px;display:flex;justify-content:space-between;align-items:end;background:linear-gradient(90deg,#163e67,#0c1c2d)}.uefi-brand b{font-size:35px;color:#55c6ff}.uefi-brand small{color:#8fb5cf}#uefiTabs{display:flex;background:#102b46;border-block:1px solid #4a789b}#uefiTabs button{flex:1;padding:13px;background:transparent;border:0;color:#c7deef;cursor:pointer}#uefiTabs button.active{background:#2c6c9b;color:white;box-shadow:inset 0 -3px #6ee5ff}.uefi-content{padding:28px 38px;min-height:470px}.tab h2{font-weight:400;color:#6edfff;border-bottom:1px solid #31536e;padding-bottom:10px}.setting,.boot-option,.info-grid{background:#10283e;border:1px solid #294d69;padding:14px 16px;margin:10px 0}.setting,.boot-option{display:flex;justify-content:space-between;align-items:center}.uefi-content select{background:#173c59;color:white;border:1px solid #4b88ad;padding:7px;min-width:270px}.info-grid{display:grid;grid-template-columns:220px 1fr;gap:15px}.hint{margin-top:25px;background:#17344c;border-left:4px solid #4fd4ff;padding:14px;color:#cce7f7}.uefi-action{display:block;width:100%;text-align:left;padding:16px;margin:12px 0;background:#17679c;color:white;border:1px solid #65bfe9}.uefi-action.secondary{background:#263747}.uefi-footer{padding:12px 20px;border-top:1px solid #31536e;color:#8cb2cc;font-size:12px}.uefi-footer span{float:right}
+@media(max-width:800px){.cards{grid-template-columns:1fr}.home h1{font-size:34px}.home header{display:block}.safe{display:inline-block}.rufus-window,.teacher{width:94vw}.bios-grid{grid-template-columns:1fr;padding:25px}.uefi-content{padding:18px}.setting,.boot-option{align-items:start;gap:10px;flex-direction:column}.uefi-content select{min-width:100%}}
+.bios-line{display:flex;justify-content:space-between;gap:20px;cursor:default}
+.bios-line b{font-weight:normal;color:#ffe95a}
+.bios-line.selected b{color:#071d9c}
+.bios-panel{min-height:490px}
+
+.uefi-row{display:grid;grid-template-columns:1fr minmax(230px,auto) 45px;align-items:center;gap:15px;background:#10283e;border:1px solid #294d69;padding:13px 16px;margin:7px 0;cursor:pointer}
+.uefi-row:hover,.uefi-row.selected{background:#1d5277;border-color:#65c9f0}
+.uefi-row b{background:#173c59;border:1px solid #4b88ad;padding:7px 10px;font-weight:500;color:#fff}
+.uefi-row em{font-size:10px;color:#73dfff;font-style:normal;text-align:right}
+.uefi-row.selected b{border-color:#80e5ff}
+@media(max-width:700px){.uefi-row{grid-template-columns:1fr}.uefi-row em{display:none}}
+
+.iso-dialog{width:min(820px,94vw);padding:0;overflow:hidden}
+.fake-explorer-title{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#f5f5f5;border-bottom:1px solid #ccc}
+.fake-explorer-title button{border:0;background:transparent;font-size:20px}
+.fake-path{margin:12px;border:1px solid #bbb;background:white;padding:8px;color:#555}
+.file-head,.fake-file{display:grid;grid-template-columns:1fr 130px 90px;gap:10px;align-items:center}
+.file-head{margin:0 12px;padding:7px 10px;border-bottom:1px solid #bbb;color:#555;font-size:12px}
+.file-list{margin:0 12px;height:310px;overflow:auto;background:white;border:1px solid #bbb;border-top:0}
+.fake-file{width:100%;border:0;background:white;text-align:left;padding:9px 10px;cursor:pointer}
+.fake-file:hover{background:#eaf4ff}.fake-file.selected{background:#cfe8ff;outline:1px solid #75b8e8}
+.fake-file span:first-child{min-width:0}.fake-file b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}.fake-file small{display:block;color:#777;margin:3px 0 0 24px}
+.fake-file-bottom{display:grid;grid-template-columns:auto 1fr 170px auto auto;gap:8px;align-items:center;padding:12px;background:#f4f4f4;border-top:1px solid #ccc}
+.fake-file-bottom input,.fake-file-bottom select{height:32px;border:1px solid #aaa;padding:4px 7px}.fake-file-bottom button{height:32px;border:1px solid #999;padding:0 14px}
+@media(max-width:650px){.file-head,.fake-file{grid-template-columns:1fr 75px}.file-head span:nth-child(2),.fake-file span:nth-child(2){display:none}.fake-file-bottom{grid-template-columns:1fr 1fr}.fake-file-bottom label{display:none}.fake-file-bottom input,.fake-file-bottom select{grid-column:1/-1}}
+
+/* Explorador fictício do Windows — visualização Detalhes */
+.iso-dialog{width:min(1040px,96vw);height:min(650px,90vh);display:flex;flex-direction:column;background:#f8f8f8}
+.explorer-toolbar{display:grid;grid-template-columns:34px 34px 34px 1fr 190px;gap:5px;align-items:center;padding:8px 10px;border-bottom:1px solid #d0d0d0;background:#fafafa}
+.explorer-toolbar>button{height:32px;border:0;background:transparent;font-size:18px;color:#444}
+.explorer-toolbar>button:hover{background:#e5e5e5}
+.fake-path,.fake-search{margin:0;height:32px;display:flex;align-items:center;border:1px solid #c9c9c9;background:white;padding:0 9px;font-size:12px;color:#333}
+.fake-search{color:#777}
+.explorer-body{display:grid;grid-template-columns:190px 1fr;min-height:0;flex:1}
+.explorer-side{border-right:1px solid #ddd;background:#f7f7f7;padding:12px 8px;display:flex;flex-direction:column;gap:2px;font-size:12px}
+.explorer-side b{padding:10px 8px 4px}.explorer-side span{padding:7px 9px;border-radius:3px}.explorer-side span:nth-of-type(2){background:#e6e6e6}
+.explorer-files{display:flex;flex-direction:column;min-width:0;background:white}
+.file-head,.fake-file{display:grid!important;grid-template-columns:minmax(310px,1fr) 155px 175px 85px!important;gap:0!important;align-items:center}
+.file-head{margin:0!important;padding:0!important;height:30px;border-bottom:1px solid #ddd;background:#fff;color:#444;font-size:11px}
+.file-head span{height:100%;display:flex;align-items:center;padding:0 9px;border-right:1px solid #e4e4e4}
+.file-list{margin:0!important;border:0!important;height:auto!important;flex:1;overflow:auto;background:white}
+.fake-file{min-height:53px;padding:0!important;border:0!important;border-bottom:1px solid #f3f3f3!important;font-size:11px;color:#222}
+.fake-file>span{padding:7px 9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fake-file:hover{background:#eaf4fc!important}.fake-file.selected{background:#cce8ff!important;outline:1px solid #99d1ff!important;outline-offset:-1px}
+.filename-cell{display:flex!important;align-items:center;gap:10px;min-width:0}
+.filename-cell>span:last-child{min-width:0;overflow:hidden}
+.filename-cell b{font-size:12px;font-weight:400;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.filename-cell small{font-size:10px;color:#777;display:block!important;margin:2px 0 0!important;overflow:hidden;text-overflow:ellipsis}
+.disc-icon{position:relative;display:inline-block;flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:conic-gradient(#d9e7f3,#f8fbfd,#b8d0e2,#eef7fc,#b9cddd,#f9fbfd,#d9e7f3);border:1px solid #9aaab6;box-shadow:inset 0 0 0 3px #edf4f8}
+.disc-icon:before{content:"";position:absolute;inset:10px;border-radius:50%;background:#d9e4eb;border:1px solid #8fa0aa}
+.disc-icon:after{content:"";position:absolute;width:5px;height:5px;left:13px;top:13px;border-radius:50%;background:white;border:1px solid #9aa}
+.disc-icon i{position:absolute;width:9px;height:4px;right:-2px;bottom:2px;background:#2582c4;border-radius:1px;transform:rotate(-18deg)}
+.file-status{height:28px;border-top:1px solid #ddd;background:#fafafa;display:flex;justify-content:space-between;align-items:center;padding:0 10px;color:#666;font-size:10px}
+.fake-file-bottom{grid-template-columns:auto minmax(180px,1fr) 190px auto auto!important}
+@media(max-width:800px){
+ .iso-dialog{width:98vw}
+ .explorer-body{grid-template-columns:1fr}.explorer-side{display:none}
+ .explorer-toolbar{grid-template-columns:32px 32px 32px 1fr}.fake-search{display:none}
+ .file-head,.fake-file{grid-template-columns:minmax(260px,1fr) 90px!important}
+ .file-head span:nth-child(2),.file-head span:nth-child(3),.fake-file>span:nth-child(2),.fake-file>span:nth-child(3){display:none}
+}

@@ -1,0 +1,10 @@
+SIMULADORES DIDÁTICOS — RUFUS / BIOS / UEFI
+
+1. Extraia a pasta.
+2. Abra index.html no Chrome, Edge ou Firefox.
+3. Não precisa instalar nada e não precisa de internet.
+4. O simulador não acessa, formata ou altera nenhum pendrive.
+5. BIOS Legacy: use setas, Enter, Esc e F10.
+6. UEFI e Rufus: use o mouse normalmente.
+
+Objetivo: demonstração em aulas de Sistemas Operacionais e Redes.

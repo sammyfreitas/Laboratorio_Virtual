@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Laboratório Virtual — Rufus, BIOS e UEFI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="home" class="home">
+  <header>
+    <div>
+      <span class="eyebrow">SENAI • SISTEMAS OPERACIONAIS</span>
+      <h1>Laboratório Virtual de Boot</h1>
+      <p>Simuladores didáticos. Nenhuma configuração real do computador ou pendrive é alterada.</p>
+    </div>
+    <span class="safe">● AMBIENTE SEGURO</span>
+  </header>
+
+  <main class="cards">
+    <button class="lab-card" onclick="openLab('rufus')">
+      <span class="num">01</span><span class="icon">▣</span>
+      <h2>Simulador Rufus</h2>
+      <p>Selecione uma ISO fictícia, compare GPT/MBR e simule a criação de um pendrive inicializável.</p>
+      <b>Abrir laboratório →</b>
+    </button>
+    <button class="lab-card blue" onclick="openLab('bios')">
+      <span class="num">02</span><span class="icon">⌨</span>
+      <h2>BIOS Legacy</h2>
+      <p>Interface clássica em modo texto. Treine a ordem de boot usando teclado e USB-HDD.</p>
+      <b>Abrir laboratório →</b>
+    </button>
+    <button class="lab-card purple" onclick="openLab('uefi')">
+      <span class="num">03</span><span class="icon">⚙</span>
+      <h2>UEFI</h2>
+      <p>Interface moderna com mouse, Secure Boot e prioridades de inicialização em modo UEFI.</p>
+      <b>Abrir laboratório →</b>
+    </button>
+  </main>
+  <footer>
+    <p>Criado para demonstração em aula • Dados e dispositivos são fictícios</p>
+    <p>Todos os Direitos Reservados - Professor Anthony Samuel Sobral de Freitas</p>
+  </footer>
+</div>
+
+<!-- RUFUS -->
+<section id="rufus" class="lab hidden">
+  <div class="labtop"><button onclick="goHome()">← Laboratórios</button><strong>Simulador didático do Rufus</strong><span>SIMULAÇÃO</span></div>
+  <div class="rufus-window">
+    <div class="titlebar"><b>Rufus 4.x — Simulador</b><div>—　□　×</div></div>
+    <div class="rufus-body">
+      <label>Dispositivo</label>
+      <select><option>Kingston DataTraveler 3.0 (E:) [16 GB]</option><option>SanDisk Ultra USB (F:) [32 GB]</option></select>
+
+      <label>Seleção de boot</label>
+      <div class="row"><select id="bootSelection"><option>Disco ou imagem ISO (Selecione)</option><option>Não inicializável</option></select><button class="primary" onclick="chooseIso()">SELECIONAR</button></div>
+      <div id="isoInfo" class="iso hidden">📀 linuxmint-22.2-cinnamon-64bit.iso <small>Arquivo fictício selecionado</small></div>
+
+      <label>Opção de imagem</label>
+      <select><option>Instalação padrão do Windows/Linux</option></select>
+
+      <div class="two">
+        <div><label>Esquema de partição</label><select id="partition" onchange="syncTarget()"><option>GPT</option><option>MBR</option></select></div>
+        <div><label>Sistema de destino</label><select id="target"><option>UEFI (não CSM)</option><option>BIOS (ou UEFI-CSM)</option></select></div>
+      </div>
+
+      <div class="separator"><span>Opções de formatação</span></div>
+      <label>Nome do volume</label><input id="volumeLabel" value="LINUX MINT">
+      <div class="two">
+        <div><label>Sistema de arquivos</label><select id="fs"><option>FAT32 (Padrão)</option><option>NTFS</option></select></div>
+        <div><label>Tamanho do cluster</label><select><option>4096 bytes (Padrão)</option><option>8192 bytes</option></select></div>
+      </div>
+
+      <details><summary>Mostrar opções avançadas de formatação</summary>
+        <label class="check"><input type="checkbox" checked> Formatação rápida</label>
+        <label class="check"><input type="checkbox" checked> Criar arquivos estendidos de rótulo e ícone</label>
+      </details>
+
+      <div id="statusText" class="status">PRONTO</div>
+      <div class="progress"><div id="bar"></div></div>
+      <div class="actions"><button onclick="resetRufus()">FECHAR</button><button class="primary" onclick="startRufus()">INICIAR</button></div>
+      <p class="disclaimer">⚠ Simulador: nenhum dispositivo real será formatado.</p>
+    </div>
+  </div>
+  <aside class="teacher"><b>💡 Dica:</b><p id="rufusTip">Comece selecionando uma ISO. Depois compare <strong>GPT + UEFI</strong> com <strong>MBR + BIOS/Legacy</strong>.</p></aside>
+</section>
+
+<!-- BIOS -->
+<section id="bios" class="lab hidden bios-bg" tabindex="0">
+  <div class="labtop dark"><button onclick="goHome()">← Laboratórios</button><strong>BIOS Legacy — Simulador</strong><span>USE ↑ ↓ ENTER ESC F10</span></div>
+  <div class="bios-screen">
+    <div class="bios-title">CMOS SETUP UTILITY<br><small>AWARD SOFTWARE, INC. — SIMULADOR DIDÁTICO</small></div>
+
+    <div id="biosMain" class="bios-grid">
+      <div>
+        <div class="bios-item selected" data-action="standard">► STANDARD CMOS FEATURES</div>
+        <div class="bios-item" data-action="advanced">► ADVANCED BIOS FEATURES</div>
+        <div class="bios-item" data-action="chipset">► ADVANCED CHIPSET FEATURES</div>
+        <div class="bios-item" data-action="peripherals">► INTEGRATED PERIPHERALS</div>
+        <div class="bios-item" data-action="power">► POWER MANAGEMENT SETUP</div>
+        <div class="bios-item" data-action="pnp">► PNP/PCI CONFIGURATIONS</div>
+      </div>
+      <div>
+        <div class="bios-item" data-action="health">► PC HEALTH STATUS</div>
+        <div class="bios-item" data-action="failsafe">LOAD FAIL-SAFE DEFAULTS</div>
+        <div class="bios-item" data-action="optimized">LOAD OPTIMIZED DEFAULTS</div>
+        <div class="bios-item" data-action="save">SAVE & EXIT SETUP</div>
+        <div class="bios-item" data-action="exit">EXIT WITHOUT SAVING</div>
+      </div>
+    </div>
+
+    <div id="biosPanel" class="hidden bios-panel">
+      <h3 id="biosPanelTitle"></h3>
+      <div id="biosPanelRows"></div>
+      <p id="biosPanelHelp" class="bios-help"></p>
+    </div>
+
+    <div class="bios-footer">↑↓ : Select Item　 Enter : Select/Change　 ESC : Previous Menu　 F10 : Save & Exit Setup</div>
+  </div>
+  <div id="biosToast" class="toast hidden"></div>
+</section>
+
+<!-- UEFI -->
+<section id="uefi" class="lab hidden uefi-bg" tabindex="0">
+ <div class="labtop uefi-top"><button onclick="goHome()">← Laboratórios</button><strong>UEFI Setup Utility — Simulador</strong><span>MOUSE + TECLADO</span></div>
+ <div class="uefi-shell">
+   <div class="uefi-brand"><div><b>UEFI</b> Setup Utility</div><small>Educational Firmware Interface</small></div>
+   <nav id="uefiTabs">
+     <button class="active" data-tab="main">Main</button>
+     <button data-tab="advanced">Advanced</button>
+     <button data-tab="boot">Boot</button>
+     <button data-tab="security">Security</button>
+     <button data-tab="exit">Save & Exit</button>
+   </nav>
+   <div class="uefi-content">
+     <div id="uefiRows"></div>
+     <div id="uefiHelp" class="hint"></div>
+   </div>
+   <div class="uefi-footer">↑↓ Select　 Enter Change/Open　 ←→ Tabs　 F9 Defaults　 F10 Save & Exit　 ESC Exit <span>Simulação — nada real é alterado</span></div>
+ </div>
+ <div id="uefiToast" class="toast hidden"></div>
+</section>
+
+
+<div id="isoPicker" class="modal hidden">
+  <div class="dialog iso-dialog">
+    <div class="fake-explorer-title"><b>Abrir imagem de disco</b><button onclick="closeIsoPicker()">×</button></div>
+    <div class="explorer-toolbar">
+      <button title="Voltar">←</button><button title="Avançar">→</button><button title="Subir">↑</button>
+      <div class="fake-path">💻 Este Computador　›　📁 Downloads　›　📁 ISOs</div>
+      <div class="fake-search">Pesquisar ISOs 🔍</div>
+    </div>
+    <div class="explorer-body">
+      <aside class="explorer-side">
+        <b>Acesso rápido</b><span>🖥 Área de Trabalho</span><span>📥 Downloads</span><span>📄 Documentos</span>
+        <b>Este Computador</b><span>💽 Disco Local (C:)</span><span>▣ Kingston (E:)</span>
+      </aside>
+      <div class="explorer-files">
+        <div class="file-head"><span>Nome</span><span>Data de modificação</span><span>Tipo</span><span>Tamanho</span></div>
+        <div id="isoFileList" class="file-list"></div>
+        <div class="file-status"><span id="isoCount">7 itens</span><span>Arquivos fictícios para simulação</span></div>
+      </div>
+    </div>
+    <div class="fake-file-bottom">
+      <label>Nome:</label><input id="fakeFilename" readonly placeholder="Selecione um arquivo">
+      <select><option>Imagens ISO (*.iso)</option></select>
+      <button onclick="closeIsoPicker()">Cancelar</button>
+      <button class="primary" onclick="openSelectedIso()">Abrir</button>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="modal hidden"><div class="dialog"><h3>⚠ Atenção</h3><p>Todos os dados do dispositivo selecionado serão apagados.</p><p><b>Nesta atividade isso é apenas uma simulação.</b></p><div><button onclick="closeModal()">CANCELAR</button><button class="danger" onclick="confirmRufus()">OK</button></div></div></div>
+
+<script src="app.js"></script>
+</body></html>
