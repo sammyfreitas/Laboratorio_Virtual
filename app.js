@@ -353,3 +353,16 @@ document.getElementById("biosPanelRows").addEventListener("click",e=>{
  const line=e.target.closest(".bios-line"); if(!line)return;
  biosIndex=Number(line.dataset.row); biosPaint(); changeBiosValue();
 });
+
+function applyTheme(t){
+ document.documentElement.dataset.theme=t;
+ localStorage.setItem("lab-theme",t);
+ let b=document.getElementById("themeToggle");
+ if(b){
+   b.textContent=t==="dark"?"☀️":"🌙";
+   b.title=t==="dark"?"Usar tema claro":"Usar tema escuro";
+   b.setAttribute("aria-label",b.title);
+ }
+}
+function toggleTheme(){applyTheme((document.documentElement.dataset.theme||"light")==="dark"?"light":"dark");}
+applyTheme(localStorage.getItem("lab-theme")||"light");
