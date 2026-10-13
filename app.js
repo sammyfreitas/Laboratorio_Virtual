@@ -366,3 +366,8 @@ function applyTheme(t){
 }
 function toggleTheme(){applyTheme((document.documentElement.dataset.theme||"light")==="dark"?"light":"dark");}
 applyTheme(localStorage.getItem("lab-theme")||"light");
+
+// Links diretos didáticos: #rufus, #bios e #uefi
+function openFromHash(){const id=location.hash.slice(1).toLowerCase();if(['rufus','bios','uefi'].includes(id))openLab(id)}
+window.addEventListener('hashchange',openFromHash);
+window.addEventListener('DOMContentLoaded',openFromHash);
