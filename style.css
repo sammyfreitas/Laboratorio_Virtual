@@ -107,3 +107,17 @@
 .portfolio-mark{display:grid;place-items:center;width:25px;height:25px;font-size:21px;line-height:1}
 :root[data-theme="dark"] .social-icon.github img,
 :root[data-theme="dark"] .social-icon.x img{filter:invert(1)}
+
+
+/* Seis módulos visíveis em janelas de computador, mantendo leitura no celular. */
+@media(min-width:901px) and (min-height:620px){
+ .home{min-height:100svh;max-width:1240px;padding:clamp(16px,3vh,30px) 28px;display:flex;flex-direction:column;gap:clamp(12px,2vh,22px)}
+ .home header{gap:18px}.home h1{font-size:clamp(25px,2.65vw,36px);line-height:1.16;margin:6px 0}.home header p{font-size:13px;margin:8px 0 0}.eyebrow{font-size:10px}
+ .header-right{gap:8px}.theme-toggle.icon-only{width:40px;height:40px;font-size:22px}.safe{min-height:40px;font-size:10px}
+ .cards{margin-top:0;gap:clamp(12px,1.8vh,18px);grid-template-rows:repeat(2,minmax(0,1fr));flex:1}
+ .lab-card{min-height:0;padding:clamp(16px,2.2vh,23px);display:flex!important;flex-direction:column;align-items:flex-start}
+ .lab-card .icon{width:42px;height:42px;font-size:24px;border-radius:10px}.lab-card .num{font-size:25px;top:14px;right:16px}
+ .lab-card h2{font-size:clamp(17px,1.5vw,21px);margin:14px 0 8px}.lab-card p{font-size:13px;line-height:1.45;margin:0 0 12px}.lab-card b{font-size:13px;margin-top:auto;padding-top:8px}
+ .home footer{margin-top:0;font-size:11px;line-height:1.35}
+}
+@media(min-width:901px) and (min-height:620px) and (max-height:790px){.home{height:100svh}.home h1{font-size:28px}.home header p{font-size:12px}.lab-card .icon{width:34px;height:34px;font-size:22px}.lab-card h2{margin-top:10px}.lab-card p{font-size:12px}.home footer{font-size:10px}}

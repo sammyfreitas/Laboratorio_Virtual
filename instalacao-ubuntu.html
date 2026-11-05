@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Laboratórios de Sistemas Operacionais</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Ubuntu+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: mesma bancada do simulador do Windows — monitor simulado à esquerda, roteiro à direita */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --fg:#17202b; --muted:#5b6675; --line:#d7dce3;
+  --accent:#c2410c; --accent-soft:#fbe9df; --ok:#1f8a4c; --warn:#b5590d; --bezel:#1c2026;
+  --f-ui:"Instrument Sans",system-ui,sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --f-scr:"Ubuntu Sans",Cantarell,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1317; --panel:#171c22; --fg:#e6ebf1; --muted:#97a2b0; --line:#2a323c;
+  --accent:#f0814a; --accent-soft:#3a1f12; --ok:#4cc184; --warn:#f0a35c; --bezel:#05070a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1317; --panel:#171c22; --fg:#e6ebf1; --muted:#97a2b0; --line:#2a323c;
+  --accent:#f0814a; --accent-soft:#3a1f12; --ok:#4cc184; --warn:#f0a35c; --bezel:#05070a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:1360px;margin:0 auto;padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:end;justify-content:space-between}
+h1{font-size:1.5rem;margin:0;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:2px 0 0;color:var(--muted);font-size:.92rem;max-width:62ch}
+.ctrl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ctrl label{font-size:.82rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:none;color:var(--fg);font:inherit;font-size:.88rem;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.ghost{border:1px solid var(--line);background:var(--panel);color:var(--fg);font:inherit;font-size:.88rem;padding:6px 14px;border-radius:8px;cursor:pointer;text-decoration:none}
+.ghost:hover{border-color:var(--accent)}
+button:focus-visible,select:focus-visible,input:focus-visible,li:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+@media (max-width:1000px){main{grid-template-columns:minmax(0,1fr)}}
+.monitor{background:var(--bezel);padding:12px 12px 26px;border-radius:14px;position:relative;min-width:0}
+.monitor::after{content:"";position:absolute;bottom:9px;left:50%;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:#2fd06a;box-shadow:0 0 6px #2fd06a}
+.screen{position:relative;aspect-ratio:16/10;max-width:100%;overflow:hidden;background:#000;border-radius:3px;container-type:inline-size;font-family:var(--f-scr);color:#2b2b2b}
+#stage{position:absolute;inset:0;overflow:auto;font-size:clamp(11px,1.42cqw,15px)}
+@media (max-width:700px){.screen{aspect-ratio:auto;height:640px}#stage{font-size:12.5px}}
+aside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h2{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px;font-weight:600}
+.phases{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;counter-reset:ph}
+.phases li{counter-increment:ph;display:flex;gap:10px;align-items:center;padding:5px 6px;border-radius:6px;font-size:.92rem;color:var(--muted)}
+.phases li::before{content:counter(ph);width:22px;height:22px;flex:none;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-size:.75rem;font-family:var(--f-mono)}
+.phases li.done{color:var(--fg)}.phases li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}
+.phases li.cur{background:var(--accent-soft);color:var(--fg);font-weight:600}.phases li.cur::before{border-color:var(--accent);color:var(--accent)}
+#gTitle{font-size:1.08rem;margin:0 0 6px;text-wrap:balance}
+#gText{margin:0;font-size:.93rem}#gText b{font-weight:600}
+#gText code,.tip code{font-family:var(--f-mono);font-size:.85em;background:var(--accent-soft);padding:0 4px;border-radius:3px}
+.tip{margin-top:10px;padding:8px 10px;border-left:3px solid var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent);font-size:.86rem;border-radius:0 6px 6px 0}
+.tip:empty{display:none}
+#log{font-family:var(--f-mono);font-size:.74rem;max-height:200px;overflow:auto;margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;color:var(--muted)}
+#log li span{color:var(--accent)}
+
+/* ===== tela simulada ===== */
+.post,.bios,.black,.grub,.tty{position:absolute;inset:0;background:#000;color:#cfd6df;font-family:var(--f-mono)}
+.post{display:flex;flex-direction:column;justify-content:space-between;padding:4% 5%}
+.post .brand{font-size:2.6em;font-weight:600;letter-spacing:.08em;color:#e8edf3;text-align:center;margin-top:12%}
+.post .keys{display:flex;gap:2em;flex-wrap:wrap;justify-content:center;font-size:.95em}
+.post .keys button{font:inherit;background:none;border:1px solid #556;color:#e8edf3;padding:.3em .8em;cursor:pointer}
+.bar{height:.35em;background:#222;margin-top:1em;border-radius:2px;overflow:hidden}.bar i{display:block;height:100%;background:#7aa7d8;width:0}
+.bios{background:#0b1a4a;color:#dfe6ff;display:flex;align-items:center;justify-content:center;padding:3%}
+.bios .box{border:2px solid #9fb2ea;width:min(92%,640px);background:#0e2364}
+.bios .bh{background:#9fb2ea;color:#0b1a4a;padding:.4em .8em;font-weight:600}
+.bios ul,.grub ul{list-style:none;margin:0;padding:.8em}
+.bios li,.grub li{padding:.3em .6em;cursor:pointer}
+.bios li.on{background:#dfe6ff;color:#0b1a4a}
+.bios .bf{border-top:1px solid #4a5f9e;padding:.5em .8em;font-size:.85em;color:#a9b8e8}
+.grub{display:flex;flex-direction:column;align-items:center;padding:5% 6%;gap:1em}
+.grub .gt{color:#ddd}.grub .gb{border:1px solid #bbb;width:100%;max-width:52em;flex:1;min-height:0}
+.grub li{color:#ccc}.grub li.on{background:#ddd;color:#000}
+.grub .gf{font-size:.85em;color:#aaa;max-width:52em;width:100%}
+.black{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4em;font-family:var(--f-scr);color:#fff;text-align:center;padding:5%}
+.black .wm{font-size:1.9em;font-weight:300;letter-spacing:.02em}
+.black .sub{color:#aaa;font-family:var(--f-mono);font-size:.82em}
+.tty{padding:3%;font-size:.88em;line-height:1.45;color:#d0d0d0;overflow:auto}
+.dotsp{display:flex;gap:.5em}.dotsp i{width:.55em;height:.55em;border-radius:50%;background:#666;animation:dp 1.4s infinite}
+.dotsp i:nth-child(2){animation-delay:.2s}.dotsp i:nth-child(3){animation-delay:.4s}.dotsp i:nth-child(4){animation-delay:.6s}.dotsp i:nth-child(5){animation-delay:.8s}
+@keyframes dp{0%,100%{background:#555}40%{background:#e95420}}
+@media (prefers-reduced-motion:reduce){.dotsp i{animation-duration:5s}}
+/* sistema live */
+.live{position:absolute;inset:0;background:radial-gradient(80% 90% at 75% 80%,#c4501f 0%,transparent 60%),radial-gradient(70% 80% at 20% 20%,#5b1d4a 0%,transparent 65%),#2c0f2e;display:flex;flex-direction:column}
+.gtop{height:1.9em;background:#0d0d0d;color:#eee;display:flex;align-items:center;justify-content:space-between;padding:0 .8em;font-size:.82em;flex:none}
+.gtop .act{display:flex;gap:.3em;align-items:center}.gtop .act i{width:.5em;height:.5em;border-radius:50%;background:#888}.gtop .act i:first-child{width:1.3em;border-radius:1em;background:#eee}
+.lbody{flex:1;display:flex;min-height:0;position:relative}
+.dock{width:3.6em;background:rgba(20,20,20,.72);display:flex;flex-direction:column;align-items:center;gap:.55em;padding:.7em 0;flex:none}
+.dock i{width:2.3em;height:2.3em;border-radius:.55em;display:block}
+.dock i.r{margin-top:auto;background:none;display:grid;grid-template-columns:repeat(3,.35em);gap:.25em;justify-content:center;align-content:center}
+.dock i.r b{width:.35em;height:.35em;border-radius:50%;background:#ddd}
+.iwrap{flex:1;display:flex;align-items:center;justify-content:center;padding:2%;min-width:0}
+.iw{background:#fafafa;width:min(100%,50em);height:min(100%,35em);border-radius:.8em;box-shadow:0 1em 3em rgba(0,0,0,.5);display:flex;flex-direction:column;overflow:hidden;position:relative}
+.ih{display:flex;align-items:center;justify-content:space-between;padding:.55em .8em;background:#f0f0f0;border-bottom:1px solid #ddd;font-size:.9em}
+.ih b{font-weight:600}.ih .x{width:1.4em;height:1.4em;border-radius:50%;background:#ddd;display:grid;place-items:center;font-size:.75em}
+.ib{flex:1;overflow:auto;padding:1.4em 2.2em;min-height:0}
+.ib h3{font-weight:300;font-size:1.65em;margin:0 0 .3em;color:#2b2b2b;text-wrap:balance}
+.ib .lead{color:#555;margin:0 0 1em}
+.if{display:flex;align-items:center;gap:.6em;padding:.75em 1.2em;border-top:1px solid #e3e3e3;background:#f6f6f6}
+.if .pd{flex:1;display:flex;justify-content:center;gap:.4em}.if .pd i{width:.45em;height:.45em;border-radius:50%;background:#ccc}.if .pd i.on{background:#e95420}
+.b{font:inherit;font-size:.95em;padding:.42em 1.3em;border-radius:.4em;border:1px solid #c8c8c8;background:#fff;color:#2b2b2b;cursor:pointer;min-width:6em}
+.b:hover{background:#f0f0f0}.b.p{background:#e95420;border-color:#e95420;color:#fff}.b.p:hover{background:#d64a18}
+.b.red{background:#c7162b;border-color:#c7162b;color:#fff}
+.b:disabled{opacity:.45;cursor:not-allowed}
+.lnk{background:none;border:0;color:#b8410f;font:inherit;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:2px}
+.scr select,.scr input[type=text],.scr input[type=password],.scr input[type=search]{font:inherit;padding:.4em .55em;border:1px solid #bbb;border-radius:.35em;background:#fff;color:#2b2b2b;width:100%;min-width:0}
+.lst{list-style:none;margin:0;padding:0;border:1px solid #ddd;border-radius:.45em;max-height:14em;overflow:auto;background:#fff}
+.lst li{padding:.5em .9em;cursor:pointer;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;gap:1em}
+.lst li:hover{background:#fbf1ec}.lst li.on{background:#fbe0d3;font-weight:500}
+.ro{display:flex;gap:.8em;align-items:flex-start;padding:.7em .9em;border:1px solid #ddd;border-radius:.5em;background:#fff;margin-bottom:.6em;cursor:pointer}
+.ro:hover{border-color:#e95420}.ro input{margin-top:.25em;accent-color:#e95420}
+.ro b{display:block;font-weight:500}.ro span{font-size:.9em;color:#666}
+.ro.dis{opacity:.5;cursor:not-allowed}
+.chk{display:flex;gap:.6em;align-items:flex-start;margin:.5em 0}.chk input{accent-color:#e95420;margin-top:.25em}
+.frm{display:grid;grid-template-columns:minmax(0,13em) minmax(0,1fr);gap:.7em 1em;align-items:center}
+@container (max-width:520px){.frm{grid-template-columns:minmax(0,1fr)}}
+.err{margin-top:.8em;padding:.5em .7em;background:#fde7e9;border:1px solid #f1b5bb;color:#8a1c24;border-radius:.35em;font-size:.9em}
+.info{margin-top:.8em;padding:.5em .7em;background:#fff4ce;border:1px solid #e8d48a;color:#5c4a00;border-radius:.35em;font-size:.9em}
+.okm{margin-top:.8em;padding:.5em .7em;background:#dff6dd;border:1px solid #9fd89f;color:#0e5a0e;border-radius:.35em;font-size:.9em}
+.tw{overflow-x:auto;border:1px solid #d6d6d6;border-radius:.4em;background:#fff}
+.tbl{width:100%;border-collapse:collapse;font-size:.9em}
+.tbl th{text-align:left;font-weight:500;padding:.4em .6em;border-bottom:1px solid #ddd;background:#f6f6f6;white-space:nowrap}
+.tbl td{padding:.4em .6em;white-space:nowrap;border-bottom:1px solid #f2f2f2}
+.tbl tr.row{cursor:pointer}.tbl tr.row:hover td{background:#fbf1ec}.tbl tr.row.on td{background:#fbe0d3}
+.tbl td.num{text-align:right;font-variant-numeric:tabular-nums}.tbl td.dev{font-family:var(--f-mono);font-size:.92em}
+.tbl tr.free td{color:#777;font-style:italic}
+.tools{display:flex;gap:.3em;margin-top:.5em;flex-wrap:wrap;align-items:center}
+.tools button{font:inherit;min-width:2.2em;padding:.25em .6em;border:1px solid #ccc;background:#fff;border-radius:.3em;cursor:pointer;color:#2b2b2b}
+.tools button:disabled{opacity:.4;cursor:default}
+.diskbar{display:flex;height:1.6em;border-radius:.3em;overflow:hidden;margin:.6em 0 .3em;border:1px solid #ccc}
+.diskbar div{display:flex;align-items:center;justify-content:center;font-size:.75em;color:#fff;overflow:hidden;white-space:nowrap;min-width:2px}
+.legend{display:flex;flex-wrap:wrap;gap:.3em 1em;font-size:.8em;color:#555}
+.legend i{display:inline-block;width:.7em;height:.7em;border-radius:.15em;margin-right:.3em;vertical-align:middle}
+.rng{width:100%;accent-color:#e95420}
+.rv dl{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr);gap:.45em 1em;margin:0}
+.rv dt{color:#666}.rv dd{margin:0}
+.rv ul{margin:.3em 0 0;padding-left:1.2em;font-size:.92em}
+.modal{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:5;padding:4%}
+.modal .m{background:#fff;width:min(100%,28em);border-radius:.6em;box-shadow:0 .8em 2.4em rgba(0,0,0,.4);overflow:hidden;max-height:100%;display:flex;flex-direction:column}
+.modal .mh{padding:.8em 1.2em;font-weight:600;border-bottom:1px solid #eee}
+.modal .mb{padding:1em 1.2em;overflow:auto}
+.modal .mf{display:flex;justify-content:flex-end;gap:.5em;padding:.7em 1em;background:#f6f6f6}
+.slide{background:linear-gradient(135deg,#3b1236,#7a2a46);color:#fff;border-radius:.6em;padding:1.4em 1.6em;min-height:9em;display:flex;flex-direction:column;justify-content:center;gap:.4em}
+.slide b{font-size:1.3em;font-weight:400}.slide span{color:#f3d6cb;font-size:.95em}
+.pbar{height:.45em;background:#e2e2e2;border-radius:1em;overflow:hidden;margin-top:1em}.pbar i{display:block;height:100%;width:0;background:#e95420;transition:width .2s}
+.ilog{margin-top:.8em;background:#1e1e1e;color:#c8e6c9;font-family:var(--f-mono);font-size:.78em;height:9em;overflow:auto;padding:.6em;border-radius:.4em;white-space:pre-wrap}
+/* GDM / desktop */
+.gdm{position:absolute;inset:0;background:#2b2b2b;color:#fff;display:flex;flex-direction:column}
+.gdm .c{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1em;padding:4%}
+.av{width:5.5em;height:5.5em;border-radius:50%;background:#e95420;display:grid;place-items:center;font-size:2.2em;font-weight:300}
+.gdm input{width:min(100%,16em);text-align:center;background:#444!important;color:#fff!important;border:1px solid #666!important}
+.desk{position:absolute;inset:0;display:flex;flex-direction:column;background:radial-gradient(70% 80% at 80% 75%,#d0582a 0%,transparent 55%),radial-gradient(60% 70% at 25% 30%,#6a2152 0%,transparent 65%),#2c0f2e}
+.win{position:absolute;top:8%;left:50%;transform:translateX(-50%);width:min(88%,31em);background:#fafafa;color:#2b2b2b;border-radius:.7em;box-shadow:0 1em 3em rgba(0,0,0,.45);overflow:hidden}
+.win .wh{padding:.5em .9em;font-size:.88em;background:#f0f0f0;border-bottom:1px solid #e2e2e2;text-align:center;font-weight:600}
+.win .wb{padding:1.1em 1.4em}
+.win dl{display:grid;grid-template-columns:auto 1fr;gap:.3em 1em;margin:.7em 0 1.1em;font-size:.92em}.win dt{color:#666}.win dd{margin:0}
+.toast{position:absolute;left:50%;bottom:5%;transform:translateX(-50%);background:#222;color:#fff;padding:.5em 1em;border-radius:.4em;font-size:.9em;z-index:9;max-width:90%;text-align:center}
+</style>
+<style>.lab-footer{text-align:center;color:var(--muted);font-size:.8rem;padding:20px} .theme-pick{font:inherit;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px}</style><style>.theme-icon{width:40px;height:40px;display:grid;place-items:center;background:var(--panel);color:var(--fg);border:1px solid var(--line);border-radius:9px;font-size:23px;cursor:pointer}.app-symbol{display:grid!important;place-items:center;background:transparent!important;font-style:normal;flex:none}.app-symbol svg{display:block;width:100%;height:100%}.tb .app-symbol{width:2em;height:2em;padding:.12em}.dock .app-symbol{padding:.05em}</style><link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%23102338%22%2F%3E%3Cpath%20d%3D%22M18%2013h28M18%2051h28M22%2014c0%2012%2020%2024%2020%2036M42%2014c0%2012-20%2024-20%2036%22%20fill%3D%22none%22%20stroke%3D%22%2338bdf8%22%20stroke-width%3D%224%22%20stroke-linecap%3D%22round%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%224%22%20fill%3D%22%23f6b73c%22%2F%3E%3C%2Fsvg%3E"><style>footer a{color:inherit;text-decoration:underline;text-underline-offset:3px}footer a:hover{color:#168bd2}.eyebrow{text-transform:none}</style></head>
+<body>
+
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Simulador de instalação do Ubuntu 26.04 LTS</h1>
+      <p>Interface didática inspirada no Ubuntu Desktop, com fluxos simplificados: boot pelo pendrive, GRUB, instalador, particionamento (inclusive ao lado do Windows), criptografia e primeiro login. Tudo fictício, nada toca no seu PC.</p>
+    </div>
+    <div class="ctrl">
+      <a class="ghost" href="index.html" style="text-decoration:none">← Laboratório</a>
+      <button type="button" id="theme" class="theme-icon" aria-label="Ativar tema escuro" title="Ativar tema escuro">🌙</button><label for="spd">Velocidade</label>
+      <div class="seg" id="spd" role="group" aria-label="Velocidade da simulação">
+        <button type="button" data-s="1" aria-pressed="true">1×</button>
+        <button type="button" data-s="4" aria-pressed="false">4×</button>
+        <button type="button" data-s="12" aria-pressed="false">12×</button>
+      </div>
+      <button type="button" class="ghost" id="reset">Recomeçar</button>
+    </div>
+  </header>
+  <main>
+    <div class="monitor"><div class="screen scr"><div id="stage"></div></div></div>
+    <aside>
+      <section class="card"><h2>Nesta tela</h2><h3 id="gTitle"></h3><p id="gText"></p><div class="tip" id="gTip"></div></section>
+      <section class="card"><h2>Etapas</h2><ol class="phases" id="phases"></ol></section>
+      <section class="card"><h2>Registro de ações</h2><ul id="log"></ul></section>
+    </aside>
+  </main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), stage=$('#stage');
+const PH=['Boot pelo pendrive','Idioma e acessibilidade','Teclado e rede','Tipo de instalação e apps','Disco e partições','Conta e fuso horário','Instalação e reinício','Primeiro login'];
+const FLOW=['ilang','access','kbd','net','tryinst','itype','apps','drivers','disk','account','tz','review'];
+const S={speed:1};
+const ORIG=()=>[{d:'nvme0n1p1',fs:'fat32',mb:100,used:31,mp:'',fmt:false,lbl:'EFI System Partition',ex:true},
+ {d:'nvme0n1p2',fs:'—',mb:16,used:16,mp:'',fmt:false,lbl:'Microsoft reserved',ex:true},
+ {d:'nvme0n1p3',fs:'ntfs',mb:242100,used:124000,mp:'',fmt:false,lbl:'Windows 11',ex:true},
+ {d:'nvme0n1p4',fs:'ntfs',mb:750,used:520,mp:'',fmt:false,lbl:'Recuperação do Windows',ex:true}];
+function fresh(){Object.assign(S,{lang:'Português (Brasil)',kb:'Português (Brasil)',kbv:'Português (Brasil)',net:null,apps:'Seleção padrão',drv:false,media:false,
+  dmode:null,adv:'Nenhum',crypt:'',rkey:false,parts:ORIG(),nextN:5,sel:-1,layout:[],dual:false,
+  name:'',host:'',user:'',pw:'',reqpw:true,tz:'America/Sao_Paulo',hist:[],cur:null,t0:Date.now()});$('#log').innerHTML=''}
+let T=[],keyH=null;
+const later=(f,ms)=>{T.push(setTimeout(f,ms/S.speed))};
+const every=(f,ms)=>{T.push(setInterval(f,ms))};
+function clearAll(){T.forEach(i=>{clearTimeout(i);clearInterval(i)});T=[];keyH=null}
+document.addEventListener('keydown',e=>{if(keyH&&!/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))keyH(e)});
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function log(m){const el=document.createElement('li');const s=Math.round((Date.now()-S.t0)/1000);el.innerHTML=`<span>${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}</span> ${esc(m)}`;const L=$('#log');L.appendChild(el);L.scrollTop=L.scrollHeight}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;stage.appendChild(t);setTimeout(()=>t.remove(),2800)}
+const gb=mb=>mb>=1024?(mb/1024).toFixed(1).replace('.',',')+' GB':Math.round(mb)+' MB';
+function setGuide(d){$('#gTitle').textContent=d.t;$('#gText').innerHTML=d.g;$('#gTip').innerHTML=d.tip||'';
+  $('#phases').innerHTML=PH.map((p,i)=>`<li class="${i<d.p?'done':i===d.p?'cur':''}">${p}</li>`).join('')}
+function go(n,push=true){clearAll();if(push&&S.cur&&INST.has(S.cur)&&INST.has(n))S.hist.push(S.cur);S.cur=n;const d=SC[n]();stage.innerHTML=d.h;stage.scrollTop=0;setGuide(d);
+  const bk=$('#bk');if(bk)bk.onclick=()=>{const p=S.hist.pop();if(p)go(p,false)};d.a&&d.a()}
+const INST=new Set([...FLOW,'alongside','manual','crypt']);
+const spinner='<div class="dotsp"><i></i><i></i><i></i><i></i><i></i></div>';
+const topbar=()=>{const t=new Date();return`<div class="gtop"><span class="act"><i></i><i></i><i></i></span><span>${t.toLocaleDateString('pt-BR',{day:'numeric',month:'short'})} ${t.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</span><span>⏻</span></div>`};
+const dock=`<div class="dock"><i class="app-symbol" role="img" aria-label="Arquivos" title="Arquivos"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32" aria-hidden="true"><path fill="#e9a329" d="M4 10h16l5 6h19v26H4z"/><path fill="#ffd568" d="M3 20h42l-4 22H7z"/></svg></i><i class="app-symbol" role="img" aria-label="Firefox" title="Firefox"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32" aria-hidden="true"><circle cx="24" cy="25" r="17" fill="#7d43c8"/><path fill="#ff9427" d="M8 7l9 6 11-5-1 10 9-7c17 21-3 41-23 30C1 35 1 18 8 7zm8 16c-5 12 12 18 17 8-9 3-14-2-13-7z"/></svg></i><i class="app-symbol" role="img" aria-label="Instalador Ubuntu" title="Instalador Ubuntu"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#e95420"/><circle cx="24" cy="24" r="11" fill="none" stroke="white" stroke-width="4"/><g fill="white" stroke="#e95420" stroke-width="2"><circle cx="37" cy="24" r="5"/><circle cx="18" cy="13" r="5"/><circle cx="18" cy="35" r="5"/></g></svg></i><i class="app-symbol" role="img" aria-label="Configurações" title="Configurações"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="32" height="32" aria-hidden="true"><g fill="#bdc6d1"><path d="M20 2h8l2 8 7-3 6 6-3 7 8 2v8l-8 2 3 7-6 6-7-3-2 6h-8l-2-6-7 3-6-6 3-7-8-2v-8l8-2-3-7 6-6 7 3z"/><circle cx="24" cy="25" r="13" fill="#566271"/><circle cx="24" cy="25" r="7" fill="#dbe4ee"/></g></svg></i><i class="r"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i></div>`;
+function inst(body,o={}){const k=FLOW.indexOf(o.dot||S.cur);
+  return`<div class="live">${topbar()}<div class="lbody">${dock}<div class="iwrap"><div class="iw"><div class="ih"><span style="width:1.4em"></span><b>Instalar Ubuntu 26.04 LTS</b><span class="x" aria-hidden="true">✕</span></div>
+  <div class="ib">${body}</div>${o.nofoot?'':`<div class="if">${o.back===false?'<span style="min-width:6em"></span>':'<button class="b" id="bk">Voltar</button>'}<div class="pd">${FLOW.map((_,i)=>`<i class="${i===k?'on':''}"></i>`).join('')}</div><button class="b p" id="nx" ${o.dis?'disabled':''}>${o.next||'Próximo'}</button></div>`}</div></div></div></div>`}
+function modal(title,body,btns){const m=document.createElement('div');m.className='modal';
+  m.innerHTML=`<div class="m" role="dialog"><div class="mh">${title}</div><div class="mb">${body}</div><div class="mf">${btns.map((b,i)=>`<button class="b ${b.c||''}" data-i="${i}">${b.l}</button>`).join('')}</div></div>`;
+  m.querySelector('.mf').onclick=e=>{const i=e.target.dataset.i;if(i===undefined)return;const r=btns[i].f?btns[i].f(m):undefined;if(r!==false)m.remove()};stage.appendChild(m);return m}
+function listPick(sel,cb){const ul=$(sel);ul.onclick=e=>{const li=e.target.closest('li');if(!li)return;ul.querySelectorAll('li').forEach(x=>x.classList.toggle('on',x===li));cb&&cb(li)}}
+const radios=n=>stage.querySelector(`input[name="${n}"]:checked`)?.value;
+
+const SC={
+post(){return{p:0,t:'Ligando o computador',g:'POST do computador. Abra o <b>menu de boot</b> para escolher o pendrive com a ISO do Ubuntu gravada (Rufus, balenaEtcher ou Ventoy).',
+ tip:'F12, F11, F8, Esc ou F9, conforme o fabricante. Se perder o tempo, o Windows que já está no SSD inicia.',
+ h:`<div class="post"><div style="font-size:.85em;color:#8a96a6">Firmware UEFI v2.8 · Memória 16384 MB OK · NVMe SSD 256 GB · USB 8 GB detectado</div><div class="brand">PC GENÉRICO</div>
+ <div><div class="keys"><span><button id="kF2">F2</button> Configuração</span><span><button id="kF12">F12</button> Menu de boot</span></div><div class="bar"><i id="pb"></i></div></div></div>`,
+ a(){let p=0;every(()=>{p+=1.25*S.speed;$('#pb').style.width=Math.min(p,100)+'%';if(p>=100){log('Perdeu o POST; iniciou o Windows');go('oldsys')}},100);
+  const f=()=>{log('F12: menu de boot');go('bios')};$('#kF12').onclick=f;$('#kF2').onclick=()=>toast('Não precisa entrar na UEFI aqui. Use F12.');
+  keyH=e=>{if(['F12','F11','Escape'].includes(e.key)){e.preventDefault();f()}}}}},
+oldsys(){return{p:0,t:'Iniciou o sistema antigo',g:'O PC seguiu a ordem de boot padrão e carregou o Windows do SSD.',tip:'Se o pendrive nem aparece no menu, desative o Secure Boot só se a ISO for antiga. O Ubuntu 26.04 inicia normalmente com Secure Boot ligado.',
+ h:`<div class="black">${spinner}<div>Carregando o Windows do SSD…</div><button class="b" id="rb">Reiniciar e tentar de novo</button></div>`,a(){$('#rb').onclick=()=>go('post')}}},
+bios(){const it=['Windows Boot Manager (NVMe SSD 256GB)','UEFI: USB Flash Drive 8GB, Partition 1','UEFI: PXE IPv4 Ethernet','Entrar na configuração'];let s=0;
+ return{p:0,t:'Menu de boot',g:'Escolha <b>UEFI: USB</b> com ↑ ↓ e Enter, ou clique duas vezes. Instalar em modo UEFI é o que permite dual boot com o Windows 11.',
+ tip:'Se o pendrive aparecer duas vezes, uma sem “UEFI”, evite essa: ela inicia em modo legado (BIOS) e o dual boot com Windows UEFI não funciona direito.',
+ h:`<div class="bios"><div class="box"><div class="bh">Menu de inicialização</div><ul id="bl">${it.map((x,i)=>`<li data-i="${i}" class="${i?'':'on'}">${x}</li>`).join('')}</ul><div class="bf">↑↓ Mover · Enter Selecionar · clique duplo também funciona</div></div></div>`,
+ a(){const L=$('#bl');const draw=()=>L.querySelectorAll('li').forEach((li,i)=>li.classList.toggle('on',i===s));
+  const pick=()=>{if(s===1){log('Boot pelo pendrive');go('grub')}else if(s===0){log('Boot pelo SSD');go('oldsys')}else toast('Escolha o pendrive USB.')};
+  L.onclick=e=>{const li=e.target.closest('li');if(li){s=+li.dataset.i;draw()}};L.ondblclick=e=>{if(e.target.closest('li'))pick()};
+  keyH=e=>{if(e.key==='ArrowDown'){s=(s+1)%4;draw();e.preventDefault()}else if(e.key==='ArrowUp'){s=(s+3)%4;draw();e.preventDefault()}else if(e.key==='Enter')pick()}}}},
+grub(){const it=['*Try or Install Ubuntu','Ubuntu (safe graphics)','Boot from next volume','UEFI Firmware Settings'];let s=0,c=30;
+ return{p:0,t:'Menu do GRUB do pendrive',g:'Este é o GRUB da mídia de instalação. <b>Try or Install Ubuntu</b> é o padrão. Use <b>safe graphics</b> se a tela ficar preta ou travar no boot, comum com placas NVIDIA.',
+ tip:'Se nada for apertado, o item marcado inicia sozinho quando a contagem acaba.',
+ h:`<div class="grub"><div class="gt">GNU GRUB  version 2.12</div><div class="gb"><ul id="gl">${it.map((x,i)=>`<li data-i="${i}" class="${i?'':'on'}">${x}</li>`).join('')}</ul></div>
+  <div class="gf">Use as teclas ↑ e ↓ para selecionar. Enter inicia o item marcado.<br>O item destacado será executado automaticamente em <span id="gc">30</span>s.</div></div>`,
+ a(){const L=$('#gl');const draw=()=>L.querySelectorAll('li').forEach((li,i)=>li.classList.toggle('on',i===s));let stop=false;
+  const pick=()=>{if(s<=1){log('GRUB: '+it[s].replace('*',''));go('boot')}else if(s===2){log('Pulou para o próximo volume');go('oldsys')}else toast('Configuração da UEFI fora do escopo.')};
+  const tick=()=>{if(stop)return;c--;$('#gc').textContent=c;if(c<=0)pick();else later(tick,1000)};later(tick,1000);
+  L.onclick=e=>{const li=e.target.closest('li');if(li){stop=true;s=+li.dataset.i;draw()}};L.ondblclick=e=>{if(e.target.closest('li'))pick()};
+  keyH=e=>{stop=true;if(e.key==='ArrowDown'){s=(s+1)%4;draw();e.preventDefault()}else if(e.key==='ArrowUp'){s=(s+3)%4;draw();e.preventDefault()}else if(e.key==='Enter')pick()}}}},
+boot(){return{p:0,t:'Iniciando o sistema live',g:'O Ubuntu está carregando direto do pendrive, em modo “live”. Nada foi gravado no SSD ainda.',
+ tip:'Se aparecer a mensagem de checagem do disco, pode deixar terminar ou apertar Ctrl+C para pular.',
+ h:`<div class="black"><div class="wm">Ubuntu 26.04 LTS</div>${spinner}<div class="sub" id="bs">/dev/sda1: clean, 1271/489600 files</div></div>`,
+ a(){later(()=>{$('#bs').textContent='Iniciando GNOME…'},2200);later(()=>{log('Sistema live carregado');go('ilang')},4200)}}},
+ilang(){const L=['Deutsch','English','Español','Français','Italiano','Português','Português (Brasil)','Русский','中文(简体)'];
+ return{p:1,t:'Idioma',g:'Idioma do instalador e do sistema instalado. Os pacotes de tradução entram durante a instalação se houver internet.',
+ h:inst(`<h3>Bem-vindo ao Ubuntu</h3><p class="lead">Selecione seu idioma</p><ul class="lst" id="L">${L.map(x=>`<li class="${x===S.lang?'on':''}">${x}</li>`).join('')}</ul>`,{back:false}),
+ a(){listPick('#L');$('#nx').onclick=()=>{S.lang=stage.querySelector('#L li.on').textContent;log('Idioma: '+S.lang);go('access')}}}},
+access(){return{p:1,t:'Acessibilidade',g:'Opções para visão, audição e coordenação motora, aplicadas já no instalador. Se não precisar, só avance.',
+ h:inst(`<h3>Acessibilidade no Ubuntu</h3><p class="lead">Ajuste estas opções agora ou depois, em Configurações.</p>
+ ${[['Visão','Alto contraste, texto grande, leitor de tela, zoom'],['Audição','Alertas visuais'],['Digitação','Teclado na tela, teclas de aderência, repetição'],['Apontar e clicar','Teclas do mouse, clique secundário simulado']].map(([a,b])=>`<div class="ro" data-t="${a}"><span style="flex:1"><b>${a}</b><span>${b}</span></span><span>›</span></div>`).join('')}`),
+ a(){stage.querySelectorAll('.ro').forEach(r=>r.onclick=()=>toast(r.dataset.t+': opções ficam disponíveis em Configurações > Acessibilidade.'));$('#nx').onclick=()=>go('kbd')}}},
+kbd(){const L=['Inglês (EUA)','Português','Português (Brasil)','Espanhol','Francês'];const V={'Português (Brasil)':['Português (Brasil)','Português (Brasil, sem teclas mortas)','Português (Brasil, ThinkPad)','Português (Brasil, Nativo)'],'Inglês (EUA)':['Inglês (EUA)','Inglês (EUA, internacional com teclas mortas)'],'Português':['Português','Português (sem teclas mortas)'],'Espanhol':['Espanhol'],'Francês':['Francês']};
+ return{p:2,t:'Layout do teclado',g:'Teclado brasileiro com Ç é <b>Português (Brasil)</b>. Use o campo de teste para conferir: digite ç, acentos e /?. Se o / ou o ? não saírem, o layout está errado.',
+ tip:'Teclado de notebook importado (sem Ç) normalmente é <b>Inglês (EUA, internacional com teclas mortas)</b>.',
+ h:inst(`<h3>Layout do teclado</h3><p class="lead">Selecione o layout do seu teclado</p><div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:.8em">
+  <ul class="lst" id="L">${L.map(x=>`<li class="${x===S.kb?'on':''}">${x}</li>`).join('')}</ul><ul class="lst" id="V"></ul></div>
+  <input type="text" id="kt" placeholder="Digite aqui para testar o teclado" style="margin-top:.8em"><div style="margin-top:.6em"><button class="lnk" id="det">Detectar layout do teclado</button></div>`),
+ a(){const dv=()=>{$('#V').innerHTML=V[S.kb].map(x=>`<li class="${x===S.kbv?'on':''}">${x}</li>`).join('');if(!V[S.kb].includes(S.kbv)){S.kbv=V[S.kb][0];$('#V li').classList.add('on')}};dv();
+  listPick('#L',li=>{S.kb=li.textContent;dv()});listPick('#V',li=>S.kbv=li.textContent);
+  $('#det').onclick=()=>toast('Detecção: pressione a tecla à direita do L. Se for Ç, o layout é Português (Brasil).');
+  $('#nx').onclick=()=>{log('Teclado: '+S.kbv);go('net')}}}},
+net(){const W=[['Casa_5G','▂▄▆█'],['Casa_2.4G','▂▄▆_'],['Vizinho-Fibra','▂▄__']];let pick=null;
+ return{p:2,t:'Conexão com a internet',g:'Com internet o instalador baixa atualizações, pacotes de idioma completos e drivers. Sem internet também dá para instalar.',
+ tip:'Cabo de rede é detectado sozinho. Se o Wi-Fi não aparecer, a placa pode precisar de driver proprietário: conecte por cabo ou pelo celular em modo roteador USB.',
+ h:inst(`<h3>Conectar à internet</h3><p class="lead">Conectar o dispositivo permite instalar atualizações e software de terceiros.</p>
+  <label class="ro"><input type="radio" name="n" value="cabo"><span><b>Usar conexão cabeada</b><span>Nenhum cabo de rede detectado</span></span></label>
+  <label class="ro"><input type="radio" name="n" value="wifi"><span><b>Conectar a uma rede Wi-Fi</b><span>Escolha uma rede da lista</span></span></label>
+  <div id="wl" hidden style="margin:-.2em 0 .7em 2em"><ul class="lst" id="L">${W.map(([a,b])=>`<li data-n="${a}"><span>${a}</span><span style="font-family:var(--f-mono);color:#e95420">${b}</span></li>`).join('')}</ul>
+   <div id="pw" hidden style="margin-top:.6em;display:flex;gap:.5em"><input type="password" id="wp" aria-label="Senha do Wi-Fi" placeholder="Senha (mín. 8, fictícia)"><button class="b p" id="wc">Conectar</button></div><div id="wm"></div></div>
+  <label class="ro"><input type="radio" name="n" value="nao"><span><b>Não quero me conectar à internet agora</b><span>A instalação continua offline</span></span></label>`,{dis:true}),
+ a(){stage.querySelectorAll('input[name=n]').forEach(r=>r.onchange=()=>{const v=radios('n');$('#wl').hidden=v!=='wifi';
+   if(v==='cabo'){toast('Nenhum cabo de rede detectado neste PC.');r.checked=false;$('#nx').disabled=true;return}$('#nx').disabled=v==='wifi'&&!S.net});
+  listPick('#L',li=>{pick=li.dataset.n;$('#pw').hidden=false;$('#wp').focus()});
+  $('#wc').onclick=()=>{if($('#wp').value.length<8){$('#wm').innerHTML='<div class="err">Senha curta demais. Redes WPA2 usam pelo menos 8 caracteres.</div>';return}S.net=pick;$('#pw').hidden=true;$('#wm').innerHTML=`<div class="okm">Conectado a ${esc(pick)}</div>`;$('#nx').disabled=false;log('Wi-Fi: '+pick)};
+  $('#nx').onclick=()=>{if(radios('n')==='nao'){S.net=null;log('Sem internet')}go('tryinst')}}}},
+tryinst(){return{p:3,t:'Experimentar ou instalar',g:'<b>Experimentar</b> abre o Ubuntu live para testar hardware (Wi-Fi, som, vídeo) sem instalar. O ícone do instalador fica na área de trabalho. Aqui seguimos com <b>Instalar</b>.',
+ h:inst(`<h3>O que você deseja fazer com o Ubuntu?</h3>
+  <label class="ro"><input type="radio" name="w" value="i" checked><span><b>Instalar o Ubuntu</b><span>Instala o Ubuntu neste computador</span></span></label>
+  <label class="ro"><input type="radio" name="w" value="t"><span><b>Experimentar o Ubuntu</b><span>Teste sem fazer alterações. Você pode instalar depois.</span></span></label>`),
+ a(){$('#nx').onclick=()=>{if(radios('w')==='t'){toast('O modo live fica fora desta simulação. Selecione Instalar.');return}log('Instalar o Ubuntu');go('itype')}}}},
+itype(){return{p:3,t:'Tipo de instalação',g:'<b>Interativa</b> é o caminho normal, tela por tela. <b>Automatizada</b> lê um arquivo <code>autoinstall.yaml</code> com todas as respostas, útil para instalar em muitos PCs iguais.',
+ h:inst(`<h3>Como você deseja instalar o Ubuntu?</h3>
+  <label class="ro"><input type="radio" name="w" value="i" checked><span><b>Instalação interativa</b><span>Configure tudo passo a passo</span></span></label>
+  <label class="ro"><input type="radio" name="w" value="a"><span><b>Instalação automatizada</b><span>Use um arquivo de autoinstalação para padronizar</span></span></label>`),
+ a(){$('#nx').onclick=()=>{if(radios('w')==='a'){toast('Exige um autoinstall.yaml por URL. Use a interativa nesta simulação.');return}go('apps')}}}},
+apps(){return{p:3,t:'Aplicativos',g:'<b>Padrão</b> traz o essencial: navegador e utilitários. <b>Estendida</b> adiciona pacote de escritório, jogos simples e outros apps. Tudo pode ser instalado depois pela Central de Apps.',
+ h:inst(`<h3>Aplicativos</h3><p class="lead">Escolha com o que começar. Você pode instalar e remover depois.</p>
+  <label class="ro"><input type="radio" name="w" value="Seleção padrão" ${S.apps==='Seleção padrão'?'checked':''}><span><b>Seleção padrão</b><span>Só o essencial: navegador web e utilitários básicos</span></span></label>
+  <label class="ro"><input type="radio" name="w" value="Seleção estendida" ${S.apps!=='Seleção padrão'?'checked':''}><span><b>Seleção estendida</b><span>Ferramentas de escritório e utilitários extras. Ideal para uso offline.</span></span></label>`),
+ a(){$('#nx').onclick=()=>{S.apps=radios('w');log('Apps: '+S.apps);go('drivers')}}}},
+drivers(){return{p:3,t:'Software de terceiros',g:'Marque <b>drivers gráficos e de Wi-Fi</b> se tiver placa NVIDIA ou Wi-Fi Broadcom. <b>Formatos de mídia</b> instala codecs para MP3, MP4 e afins.',
+ tip:'Sem internet, essas opções só são instaladas se o pacote já estiver no pendrive. Dá para instalar depois com o app “Drivers adicionais”.',
+ h:inst(`<h3>Otimize seu computador</h3><p class="lead">O Ubuntu usa software de código aberto. Alguns drivers e codecs são proprietários.</p>
+  <label class="chk"><input type="checkbox" id="c1" ${S.drv?'checked':''}><span><b>Instalar software de terceiros para placas gráficas e Wi-Fi</b><br><span style="color:#666;font-size:.9em">Esses drivers têm licença própria e podem exigir configuração do Secure Boot (MOK).</span></span></label>
+  <label class="chk"><input type="checkbox" id="c2" ${S.media?'checked':''}><span><b>Baixar e instalar suporte para formatos de mídia adicionais</b><br><span style="color:#666;font-size:.9em">Codecs com termos de licença específicos.</span></span></label><div id="dm"></div>`),
+ a(){$('#c1').onchange=e=>{$('#dm').innerHTML=e.target.checked?'<div class="info">Com Secure Boot ligado, no primeiro reinício pode aparecer uma tela azul “Perform MOK management”. Escolha <b>Enroll MOK</b> e digite a senha que o instalador pedir.</div>':''};
+  $('#nx').onclick=()=>{S.drv=$('#c1').checked;S.media=$('#c2').checked;log(`Terceiros: drivers ${S.drv?'sim':'não'}, mídia ${S.media?'sim':'não'}`);go('disk')}}}},
+disk(){return{p:4,t:'Configuração do disco',g:'A decisão mais importante. <b>Apagar o disco</b> remove o Windows e tudo mais. <b>Instalar ao lado do Windows</b> encolhe a partição do Windows e cria o dual boot. <b>Manual</b> deixa você montar as partições.',
+ tip:'Antes do dual boot: no Windows, desative a <b>Inicialização rápida</b> e, se o BitLocker estiver ativo, suspenda-o e guarde a chave de recuperação.',
+ h:inst(`<h3>Como deseja instalar o Ubuntu?</h3><p class="lead">Este computador tem o Windows 11 instalado.</p>
+  <label class="ro"><input type="radio" name="w" value="along" ${S.dmode==='along'?'checked':''}><span><b>Instalar o Ubuntu ao lado do Windows</b><span>Escolha o espaço de cada um. Na inicialização você escolhe qual sistema usar.</span></span></label>
+  <label class="ro"><input type="radio" name="w" value="erase" ${S.dmode==='erase'?'checked':''}><span><b>Apagar o disco e instalar o Ubuntu</b><span>Atenção: apaga todos os arquivos e o Windows 11.</span></span></label>
+  <div style="margin:-.2em 0 .7em 2.2em;display:flex;gap:.8em;align-items:center;flex-wrap:wrap"><button class="b" id="adv" ${S.dmode==='erase'?'':'disabled'}>Recursos avançados…</button><span id="advl" style="font-size:.9em;color:#666">${esc(S.adv)}</span></div>
+  <label class="ro"><input type="radio" name="w" value="manual" ${S.dmode==='manual'?'checked':''}><span><b>Instalação manual</b><span>Crie, redimensione ou escolha as partições você mesmo.</span></span></label>`,{dis:!S.dmode}),
+ a(){stage.querySelectorAll('input[name=w]').forEach(r=>r.onchange=()=>{S.dmode=radios('w');$('#nx').disabled=false;$('#adv').disabled=S.dmode!=='erase'});
+  $('#adv').onclick=()=>{const O=[['Nenhum','Sem LVM nem criptografia'],['Usar LVM','Facilita redimensionar e criar snapshots depois'],['Usar LVM e criptografia','Disco inteiro protegido por senha (LUKS)'],['Usar ZFS','Sistema de arquivos com snapshots e compressão'],['Criptografia com TPM','Desbloqueio automático pelo chip TPM (sem senha no boot)']];
+   modal('Recursos avançados',O.map(([a,b])=>`<label class="ro"><input type="radio" name="av" value="${a}" ${a===S.adv?'checked':''}><span><b>${a}</b><span>${b}</span></span></label>`).join(''),
+    [{l:'Cancelar'},{l:'OK',c:'p',f:()=>{S.adv=radios('av');$('#advl').textContent=S.adv;log('Avançado: '+S.adv)}}])};
+  $('#nx').onclick=()=>{const m=S.dmode;
+   if(m==='along')go('alongside');else if(m==='manual'){S.sel=-1;go('manual')}
+   else modal('Apagar o disco inteiro?',`<p style="margin:0">Todos os dados do <b>NVMe SSD 256 GB (nvme0n1)</b> serão apagados, incluindo o Windows 11 e seus arquivos.</p>`,[{l:'Cancelar'},{l:'Apagar e continuar',c:'red',f:()=>{eraseLayout();log('Apagar disco ('+S.adv+')');go(/criptografia$/.test(S.adv)||S.adv==='Usar LVM e criptografia'?'crypt':'account')}}])}}}},
+alongside(){const tot=243200,used=124000,minWin=used+10240,minU=25600;let win=Math.round((tot-minU*2)/1024)*1024;if(win<minWin)win=minWin;
+ return{p:4,t:'Dividir o espaço',g:'Arraste para definir quanto fica com cada sistema. O Windows não pode ficar menor que o espaço que já usa. O Ubuntu precisa de pelo menos 25 GB.',
+ tip:'Deixe folga para os dois: o Windows 11 cresce com atualizações. Para uso real, 60 GB ou mais para o Ubuntu é confortável.',
+ h:inst(`<h3>Instalar o Ubuntu ao lado do Windows</h3><p class="lead">Redimensione a partição do Windows 11 (nvme0n1p3).</p>
+  <div class="diskbar" aria-hidden="true"><div style="flex:0 0 auto;width:1.5%;background:#7a7a7a"></div><div id="bw" style="background:#2a6fb8">Windows</div><div id="bu" style="background:#e95420">Ubuntu</div></div>
+  <input type="range" class="rng" id="sl" min="${minWin}" max="${tot-minU}" step="512" value="${win}" aria-label="Tamanho do Windows">
+  <div style="display:flex;justify-content:space-between;font-variant-numeric:tabular-nums;margin-top:.3em"><span>Windows 11: <b id="lw"></b><br><small style="color:#666">usado: ${gb(used)}</small></span><span style="text-align:right">Ubuntu: <b id="lu"></b><br><small style="color:#666">mínimo: ${gb(minU)}</small></span></div>
+  <div class="info">Redimensionar NTFS é seguro na maioria dos casos, mas tenha backup. Se o Windows hibernou ou está com Inicialização rápida, o redimensionamento pode falhar.</div>`),
+ a(){const sl=$('#sl');const up=()=>{const w=+sl.value,u=tot-w;$('#lw').textContent=gb(w);$('#lu').textContent=gb(u);$('#bw').style.flex=w;$('#bu').style.flex=u};up();sl.oninput=up;
+  $('#nx').onclick=()=>{const w=+sl.value,u=tot-w;S.parts=ORIG();S.parts[2].mb=w;S.parts.splice(3,0,{d:'nvme0n1p5',fs:'ext4',mb:u,used:0,mp:'/',fmt:true,lbl:'Ubuntu'});
+   S.layout=[`nvme0n1p3 (Windows) redimensionada para ${gb(w)}`,`nvme0n1p5 nova, ext4 em / (${gb(u)})`,'nvme0n1p1 (EFI) reaproveitada em /boot/efi, sem formatar'];S.dual=true;S.crypt='';log('Lado a lado: Ubuntu '+gb(u));go('account')}}}},
+manual(){return{p:4,t:'Particionamento manual',g:'Monte as partições. O mínimo: uma partição <b>ext4 em /</b> com 25 GB ou mais e a partição EFI em <b>/boot/efi</b>. Para manter o Windows, reaproveite a EFI <b>sem formatar</b> e encolha o NTFS para abrir espaço.',
+ tip:'Caminho rápido para dual boot: selecione nvme0n1p3 → Editar → reduza o tamanho. Selecione o espaço livre → + → ext4, /. Selecione nvme0n1p1 → Editar → ponto /boot/efi. O Ubuntu atual usa arquivo de swap, então partição swap é opcional.',
+ h:inst(`<h3>Instalação manual</h3><p class="lead" style="margin-bottom:.4em">NVMe SSD 256 GB (/dev/nvme0n1) · tabela GPT</p><div class="diskbar" id="db" aria-hidden="true"></div><div class="legend" id="lg"></div>
+  <div class="tw" style="margin-top:.6em"><table class="tbl" id="dt"></table></div>
+  <div class="tools"><button id="tA" title="Nova partição" aria-label="Nova partição">+</button><button id="tD" title="Excluir" aria-label="Excluir partição">−</button><button id="tE">Editar</button><button id="tR" style="margin-left:auto">Reverter</button></div>
+  <div class="frm" style="margin-top:.8em"><label for="blc">Carregador de inicialização</label><select id="blc"><option>NVMe SSD 256 GB (/dev/nvme0n1)</option></select></div><div id="dm"></div>`),
+ a(){drawManual()}}},
+crypt(){return{p:4,t:'Chave de segurança do disco',g:'Esta senha será pedida <b>toda vez que o PC ligar</b>, antes do login, para destravar o disco. É diferente da senha do usuário.',
+ tip:'Perdeu a chave, perdeu os dados. Não existe recuperação. A chave de recuperação é um segundo código para guardar fora do PC.',
+ h:inst(`<h3>Escolha uma chave de segurança</h3><p class="lead">A criptografia do disco protege seus arquivos se o computador for perdido ou roubado.</p>
+  <div style="display:flex;flex-direction:column;gap:.6em;max-width:24em"><input type="password" id="k1" placeholder="Escolha uma chave de segurança" aria-label="Chave de segurança"><input type="password" id="k2" placeholder="Confirmar a chave" aria-label="Confirmar a chave"></div>
+  <label class="chk"><input type="checkbox" id="rk"><span>Criar também uma chave de recuperação</span></label><div id="km"></div>`,{dot:'disk'}),
+ a(){$('#nx').onclick=()=>{const a=$('#k1').value,b=$('#k2').value;if(a.length<4){$('#km').innerHTML='<div class="err">Digite uma chave de segurança.</div>';return}if(a!==b){$('#km').innerHTML='<div class="err">As chaves não coincidem.</div>';return}
+  S.crypt=a;S.rkey=$('#rk').checked;log('Chave de criptografia definida (fictícia)');go('account')}}}},
+account(){return{p:5,t:'Criar a conta',g:'O <b>nome de usuário</b> vira a pasta <code>/home/usuario</code> e o login no terminal: só letras minúsculas, números, hífen e sublinhado. Esse primeiro usuário recebe permissão de administrador (<code>sudo</code>).',
+ tip:'“Exigir minha senha para entrar” desligado ativa o login automático. Prático, mas qualquer pessoa que ligar o PC entra na sua conta.',
+ h:inst(`<h3>Crie sua conta</h3><div class="frm">
+  <label for="a1">Seu nome</label><input type="text" id="a1" value="${esc(S.name)}" autocomplete="off">
+  <label for="a2">Nome do computador</label><input type="text" id="a2" value="${esc(S.host)}" autocomplete="off">
+  <label for="a3">Nome de usuário</label><input type="text" id="a3" value="${esc(S.user)}" autocomplete="off">
+  <label for="a4">Senha</label><input type="password" id="a4">
+  <label for="a5">Confirmar senha</label><input type="password" id="a5">
+  <span></span><span id="st" style="font-size:.85em;color:#666"></span></div>
+  <label class="chk"><input type="checkbox" id="a6" ${S.reqpw?'checked':''}><span>Exigir minha senha para entrar</span></label>
+  <label class="chk"><input type="checkbox" id="a7"><span>Usar Active Directory</span></label><div id="am"></div>`),
+ a(){let touchedH=!!S.host,touchedU=!!S.user;const slug=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  $('#a1').oninput=e=>{const f=slug(e.target.value).split(/\s+/)[0]||'';if(!touchedU)$('#a3').value=f.replace(/[^a-z0-9_-]/g,'');if(!touchedH)$('#a2').value=f?f.replace(/[^a-z0-9-]/g,'')+'-pc':''};
+  $('#a2').oninput=()=>touchedH=true;$('#a3').oninput=()=>touchedU=true;
+  $('#a4').oninput=e=>{const v=e.target.value;const sc=(v.length>=8)+(/[A-Z]/.test(v)&&/[a-z]/.test(v))+/\d/.test(v)+/[^A-Za-z0-9]/.test(v);$('#st').textContent=v?['Senha fraca','Senha fraca','Senha razoável','Senha boa','Senha forte'][sc]:''};
+  $('#a7').onchange=e=>{if(e.target.checked){toast('Active Directory é para redes corporativas. Fora desta simulação.');e.target.checked=false}};
+  $('#nx').onclick=()=>{const n=$('#a1').value.trim(),h=$('#a2').value.trim(),u=$('#a3').value.trim(),p=$('#a4').value,c=$('#a5').value;const E=m=>$('#am').innerHTML=`<div class="err">${m}</div>`;
+   if(!n)return E('Digite seu nome.');if(!/^[a-z0-9][a-z0-9-]{0,62}$/.test(h))return E('Nome do computador: só letras minúsculas, números e hífen, começando por letra ou número.');
+   if(!/^[a-z_][a-z0-9_-]{0,31}$/.test(u))return E('Nome de usuário inválido. Use letras minúsculas, números, hífen ou sublinhado, começando por letra.');
+   if(['root','daemon','bin','sys','admin','ubuntu','sudo'].includes(u))return E('Esse nome de usuário é reservado pelo sistema.');
+   if(!p)return E('Digite uma senha.');if(p!==c)return E('As senhas não coincidem.');
+   Object.assign(S,{name:n,host:h,user:u,pw:p,reqpw:$('#a6').checked});log(`Conta: ${u}@${h}`);go('tz')}}}},
+tz(){const Z=[['São Paulo, Brasil','America/Sao_Paulo','UTC−3'],['Rio de Janeiro, Brasil','America/Sao_Paulo','UTC−3'],['Fortaleza, Brasil','America/Fortaleza','UTC−3'],['Recife, Brasil','America/Recife','UTC−3'],['Belém, Brasil','America/Belem','UTC−3'],['Cuiabá, Brasil','America/Cuiaba','UTC−4'],['Manaus, Brasil','America/Manaus','UTC−4'],['Porto Velho, Brasil','America/Porto_Velho','UTC−4'],['Rio Branco, Brasil','America/Rio_Branco','UTC−5'],['Fernando de Noronha, Brasil','America/Noronha','UTC−2'],['Lisboa, Portugal','Europe/Lisbon','UTC+0']];
+ return{p:5,t:'Fuso horário',g:'Com internet ele é detectado pela localização. Confira, porque o fuso errado deixa o relógio e os horários de arquivos desencontrados.',
+ tip:'No dual boot, o Windows guarda a hora do relógio da placa-mãe como hora local e o Linux como UTC. Se o relógio do Windows ficar 3 horas errado depois de usar o Ubuntu, rode no Ubuntu: <code>timedatectl set-local-rtc 1</code>.',
+ h:inst(`<h3>Selecione seu fuso horário</h3><input type="search" id="q" placeholder="Pesquisar cidade" aria-label="Pesquisar cidade" style="margin-bottom:.6em"><ul class="lst" id="L"></ul><p style="margin:.6em 0 0;color:#666">Fuso: <b id="zn"></b></p>`),
+ a(){const draw=()=>{const q=$('#q').value.toLowerCase();$('#L').innerHTML=Z.filter(z=>z[0].toLowerCase().includes(q)).map(z=>`<li data-z="${z[1]}" class="${z[1]===S.tz?'on':''}"><span>${z[0]}</span><span style="color:#888">${z[2]}</span></li>`).join('');$('#zn').textContent=S.tz};
+  draw();$('#q').oninput=draw;listPick('#L',li=>{S.tz=li.dataset.z;$('#zn').textContent=S.tz});$('#nx').onclick=()=>{log('Fuso: '+S.tz);go('review')}}}},
+review(){const mode={along:'Instalar ao lado do Windows 11',erase:'Apagar o disco e instalar',manual:'Particionamento manual'}[S.dmode];
+ return{p:5,t:'Revisar as escolhas',g:'Última chance de voltar. Ao clicar em <b>Instalar</b>, as alterações de partição são gravadas no disco e não dá para desfazer.',
+ h:inst(`<h3>Revise suas escolhas</h3><div class="rv"><dl>
+  <dt>Idioma</dt><dd>${esc(S.lang)}</dd><dt>Teclado</dt><dd>${esc(S.kbv)}</dd><dt>Rede</dt><dd>${S.net?esc(S.net):'Sem internet'}</dd>
+  <dt>Aplicativos</dt><dd>${esc(S.apps)}${S.drv?' · drivers de terceiros':''}${S.media?' · codecs':''}</dd>
+  <dt>Instalação</dt><dd>${mode}${S.dmode==='erase'&&S.adv!=='Nenhum'?' · '+esc(S.adv):''}</dd>
+  <dt>Partições</dt><dd><ul>${S.layout.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></dd>
+  <dt>Usuário</dt><dd>${esc(S.name)} (${esc(S.user)}@${esc(S.host)})</dd><dt>Fuso horário</dt><dd>${esc(S.tz)}</dd></dl></div>`,{next:'Instalar'}),
+ a(){$('#nx').onclick=()=>{log('Instalação iniciada');go('install')}}}},
+install(){return{p:6,t:'Instalando',g:'O instalador grava as partições, copia o sistema do pendrive, instala o GRUB na partição EFI e remove os pacotes que só servem ao modo live.',
+ tip:'Clique no ícone de terminal para ver o log. Na instalação real, ele fica em <code>/var/log/installer/</code> e ajuda a achar o motivo de uma falha.',
+ h:inst(`<h3 style="margin-bottom:.6em">Bem-vindo ao Ubuntu 26.04 LTS</h3><div class="slide" id="sd"><b></b><span></span></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1em;gap:1em"><span id="ps" style="color:#555"></span><button class="b" id="lt" style="min-width:auto;font-family:var(--f-mono)" aria-label="Mostrar log">&gt;_</button></div>
+  <div class="pbar"><i id="pp"></i></div><div class="ilog" id="il" hidden></div>`,{nofoot:true}),
+ a(){const st=[['Copiando arquivos',10],['Configurando o hardware',5],['Instalando o carregador de inicialização',4],['Instalando pacotes de idioma',6],['Removendo pacotes do sistema live',3],['Finalizando',3]];
+  const SL=[['Tudo o que você precisa no dia a dia','Navegador, arquivos, visualizador de imagens e mais, prontos para usar.'],['Encontre mais aplicativos','A Central de Apps reúne milhares de programas em pacotes Snap e Debian.'],['Atualizações por anos','Versões LTS recebem correções de segurança por pelo menos 5 anos.'],['O terminal é seu aliado','sudo apt update && sudo apt upgrade mantém tudo em dia.']];
+  const LG=['curtin: partitioning /dev/nvme0n1','mkfs.ext4 -F /dev/nvme0n1p5','mount /dev/nvme0n1p5 /target','rsync: copying squashfs to /target','apt: configuring locales pt_BR.UTF-8','update-initramfs: Generating /boot/initrd.img','grub-install --target=x86_64-efi --efi-directory=/boot/efi','os-prober: found Windows Boot Manager on /dev/nvme0n1p1','update-grub: Generating grub configuration file','apt-get purge casper ubiquity-*','installer: cleaning up','installer: done'];
+  const tot=st.reduce((a,b)=>a+b[1],0);let t=0,si=0,li=0;
+  const slide=()=>{const s=SL[si%SL.length];$('#sd b').textContent=s[0];$('#sd span').textContent=s[1];si++};slide();
+  $('#lt').onclick=()=>{$('#il').hidden=!$('#il').hidden};
+  every(()=>{t+=.1*S.speed;let acc=0,cur='';for(const [n,d] of st){acc+=d;if(t<acc){cur=n;break}}$('#ps').textContent=(cur||'Finalizando')+'…';$('#pp').style.width=Math.min(100,t/tot*100)+'%';
+   const want=Math.floor(t/tot*LG.length);while(li<want&&li<LG.length){let l=LG[li++];if(S.dmode==='erase'&&/os-prober/.test(l))l='os-prober: no other OS found';$('#il').textContent+=l+'\n';$('#il').scrollTop=1e6}
+   if(Math.floor(t/7)>=si)slide();if(t>=tot){log('Instalação concluída');go('done')}},100)}}},
+done(){return{p:6,t:'Instalação concluída',g:'Pronto para reiniciar. Na reinicialização, o sistema vai pedir para remover o pendrive.',
+ h:inst(`<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.8em;min-height:100%"><h3>O Ubuntu 26.04 LTS está instalado e pronto para uso</h3><p class="lead">Reinicie para começar a usar o sistema. Você também pode continuar testando o modo live.</p>
+  <div style="display:flex;gap:.6em"><button class="b" id="ct">Continuar testando</button><button class="b p" id="rs">Reiniciar agora</button></div></div>`,{nofoot:true}),
+ a(){$('#ct').onclick=()=>toast('O modo live fica fora desta simulação. Reinicie.');$('#rs').onclick=()=>{log('Reiniciar');go('remove')}}}},
+remove(){return{p:6,t:'Remova a mídia',g:'Tire o pendrive e aperte Enter. Se deixar, o PC pode iniciar o instalador de novo.',
+ h:`<div class="tty">[  OK  ] Stopped target Graphical Interface.<br>[  OK  ] Unmounted /cdrom.<br>[  OK  ] Reached target System Shutdown.<br><br><span style="color:#fff">Please remove the installation medium, then press ENTER:</span><br><br><button class="b" id="en" style="font-family:var(--f-mono)">Retirei o pendrive · ENTER</button></div>`,
+ a(){const f=()=>{log('Pendrive removido');go('post2')};$('#en').onclick=f;keyH=e=>{if(e.key==='Enter')f()}}}},
+post2(){return{p:6,t:'Primeiro boot do sistema instalado',g:'O PC agora inicia pelo SSD. O GRUB instalado na partição EFI assume o controle.',
+ h:`<div class="post"><div style="font-size:.85em;color:#8a96a6">Firmware UEFI v2.8 · Boot: ubuntu (NVMe SSD 256GB)</div><div class="brand">PC GENÉRICO</div><div><div class="bar"><i id="pb"></i></div></div></div>`,
+ a(){let p=0;every(()=>{p+=3*S.speed;$('#pb').style.width=Math.min(p,100)+'%';if(p>=100)go(S.dual?'grub2':S.crypt?'unlock':'bootu')},100)}}},
+grub2(){const it=['*Ubuntu','Advanced options for Ubuntu','Windows Boot Manager (on /dev/nvme0n1p1)','UEFI Firmware Settings'];let s=0,c=10,stop=false;
+ return{p:6,t:'Menu de dual boot',g:'O GRUB detectou o Windows e criou este menu. <b>Ubuntu</b> é o padrão. Escolha <b>Windows Boot Manager</b> quando quiser usar o Windows.',
+ tip:'Para trocar o padrão ou o tempo de espera, edite <code>/etc/default/grub</code> (GRUB_DEFAULT, GRUB_TIMEOUT) e rode <code>sudo update-grub</code>. Se o Windows sumiu do menu: <code>GRUB_DISABLE_OS_PROBER=false</code>.',
+ h:`<div class="grub"><div class="gt">GNU GRUB  version 2.12</div><div class="gb"><ul id="gl">${it.map((x,i)=>`<li data-i="${i}" class="${i?'':'on'}">${x}</li>`).join('')}</ul></div><div class="gf">Use ↑ e ↓. Enter inicia. Execução automática em <span id="gc">10</span>s.</div></div>`,
+ a(){const L=$('#gl');const draw=()=>L.querySelectorAll('li').forEach((li,i)=>li.classList.toggle('on',i===s));
+  const pick=()=>{if(s===0||s===1){log('GRUB: Ubuntu');go(S.crypt?'unlock':'bootu')}else if(s===2){toast('O Windows continua instalado e inicia daqui. Para seguir a simulação, escolha Ubuntu.');log('Testou entrada do Windows no GRUB')}else toast('Abriria a configuração da UEFI.')};
+  const tick=()=>{if(stop)return;c--;$('#gc').textContent=c;if(c<=0)pick();else later(tick,1000)};later(tick,1000);
+  L.onclick=e=>{const li=e.target.closest('li');if(li){stop=true;s=+li.dataset.i;draw()}};L.ondblclick=e=>{if(e.target.closest('li'))pick()};
+  keyH=e=>{stop=true;if(e.key==='ArrowDown'){s=(s+1)%4;draw();e.preventDefault()}else if(e.key==='ArrowUp'){s=(s+3)%4;draw();e.preventDefault()}else if(e.key==='Enter')pick()}}}},
+unlock(){return{p:6,t:'Destravar o disco',g:'Por causa da criptografia, o disco pede a <b>chave de segurança</b> que você definiu, antes de qualquer outra coisa.',
+ h:`<div class="black"><div class="wm">Ubuntu 26.04 LTS</div><div style="display:flex;flex-direction:column;gap:.5em;align-items:center"><label for="up">Digite a chave para destravar o disco nvme0n1p3_crypt</label><input type="password" id="up" style="width:16em;text-align:center"><span id="um" style="color:#f88;min-height:1.2em"></span></div></div>`,
+ a(){const i=$('#up');i.focus();i.onkeydown=e=>{if(e.key!=='Enter')return;if(i.value===S.crypt){log('Disco destravado');go('bootu')}else{$('#um').textContent='Chave incorreta. Tente novamente.';i.value='';log('Chave do disco incorreta')}}}}},
+bootu(){return{p:6,t:'Carregando o Ubuntu',g:'O kernel e os serviços estão subindo. O primeiro boot é um pouco mais lento.',
+ h:`<div class="black"><div class="wm">Ubuntu 26.04 LTS</div>${spinner}</div>`,a(){later(()=>go(S.reqpw?'gdm':'desk'),3200)}}},
+gdm(){return{p:7,t:'Tela de login',g:'Digite a senha do usuário criado (não a chave do disco) e aperte Enter.',
+ tip:'O ícone de engrenagem no canto, na tela real, permite escolher a sessão (Ubuntu ou Ubuntu no Xorg). Útil se um programa de captura de tela não funcionar no Wayland.',
+ h:`<div class="gdm">${topbar()}<div class="c"><div class="av">${esc((S.name[0]||'?').toUpperCase())}</div><div style="font-size:1.2em">${esc(S.name)}</div><input type="password" id="gp" placeholder="Senha" aria-label="Senha"><div id="gm" style="color:#f88;min-height:1.2em"></div></div></div>`,
+ a(){const i=$('#gp');i.focus();i.onkeydown=e=>{if(e.key!=='Enter')return;if(i.value===S.pw){log('Login de '+S.user);go('desk')}else{$('#gm').textContent='Desculpe, isso não funcionou. Tente novamente.';i.value='';log('Senha de login incorreta')}}}}},
+desk(){const sec=Math.round((Date.now()-S.t0)/1000);
+ return{p:7,t:'Ubuntu instalado',g:'Pronto. Próximos passos numa instalação real: abra o terminal (Ctrl+Alt+T) e rode <code>sudo apt update && sudo apt upgrade</code>, veja “Drivers adicionais” se tiver NVIDIA, e ajuste a aparência em Configurações.',
+ tip:'Mantenha só versões LTS se quer estabilidade. A próxima LTS chega dois anos depois desta, em abril.',
+ h:`<div class="desk">${topbar()}<div class="lbody">${dock}<div style="flex:1;position:relative"><div class="win" role="dialog" aria-label="Resumo"><div class="wh">Resumo da simulação</div><div class="wb">
+  <b style="font-size:1.15em">Bem-vindo, ${esc(S.name)}</b><dl>
+  <dt>Instalação</dt><dd>${{along:'Dual boot com Windows 11',erase:'Disco inteiro',manual:'Manual'}[S.dmode]}${S.dmode==='manual'&&S.dual?' (Windows mantido)':''}</dd>
+  <dt>Partições</dt><dd>${S.layout.map(esc).join('<br>')}</dd><dt>Criptografia</dt><dd>${S.crypt?'LUKS com chave'+(S.rkey?' + chave de recuperação':''):'não'}</dd>
+  <dt>Usuário</dt><dd>${esc(S.user)}@${esc(S.host)}${S.reqpw?'':' (login automático)'}</dd><dt>Apps</dt><dd>${esc(S.apps)}</dd><dt>Fuso</dt><dd>${esc(S.tz)}</dd>
+  <dt>Duração</dt><dd>${Math.floor(sec/60)} min ${sec%60} s</dd></dl><button class="b p" id="again">Fazer de novo</button></div></div></div></div></div>`,
+ a(){$('#again').onclick=restart}}}
+};
+
+/* ---------- discos ---------- */
+function eraseLayout(){const tot=243200;const lv=/LVM/.test(S.adv),cr=/criptografia/.test(S.adv),zfs=S.adv==='Usar ZFS',tpm=S.adv==='Criptografia com TPM';
+  S.dual=false;S.crypt=S.crypt&&cr?S.crypt:'';
+  if(zfs)S.layout=['nvme0n1p1 EFI 1,0 GB em /boot/efi','nvme0n1p2 bpool (ZFS) 2,0 GB','nvme0n1p3 rpool (ZFS) '+gb(tot-3072)+' em /'];
+  else if(lv)S.layout=['nvme0n1p1 EFI 1,0 GB em /boot/efi','nvme0n1p2 ext4 2,0 GB em /boot',`nvme0n1p3 ${cr?'LUKS → ':''}LVM ${gb(tot-3072)}, volume ubuntu-lv ext4 em /`];
+  else S.layout=['nvme0n1p1 EFI 1,0 GB em /boot/efi','nvme0n1p2 ext4 '+gb(tot-1024)+' em /'];
+  if(tpm)S.layout.push('Chave guardada no TPM: desbloqueio automático');
+}
+const COL={fat32:'#7a7a7a',ntfs:'#2a6fb8',ext4:'#e95420',btrfs:'#c2762b',xfs:'#9b4f96',swap:'#5a8f3a','—':'#aaaaaa',free:'#e6e6e6'};
+function normalize(){const o=[];for(const x of S.parts){const l=o[o.length-1];if(x.free&&l&&l.free)l.mb+=x.mb;else o.push(x)}S.parts=o.filter(x=>!x.free||x.mb>=1)}
+function msg(h){$('#dm').innerHTML=h}
+function drawManual(){const P=S.parts;const tot=P.reduce((a,x)=>a+x.mb,0);
+  $('#db').innerHTML=P.map(x=>`<div style="flex:${Math.max(x.mb,tot*.012)};background:${COL[x.free?'free':x.fs]};color:${x.free?'#666':'#fff'}">${x.mb>tot*.12?(x.free?'livre':x.lbl||x.fs):''}</div>`).join('');
+  $('#lg').innerHTML=[...new Set(P.map(x=>x.free?'free':x.fs))].map(k=>`<span><i style="background:${COL[k]}"></i>${k==='free'?'espaço livre':k}</span>`).join('');
+  $('#dt').innerHTML='<tr><th>Dispositivo</th><th>Tipo</th><th>Ponto de montagem</th><th>Tamanho</th><th>Formatar</th><th>Uso</th></tr>'+P.map((x,i)=>x.free
+   ?`<tr class="row free ${i===S.sel?'on':''}" data-i="${i}"><td class="dev">espaço livre</td><td></td><td></td><td class="num">${gb(x.mb)}</td><td></td><td></td></tr>`
+   :`<tr class="row ${i===S.sel?'on':''}" data-i="${i}"><td class="dev">${x.d}</td><td>${x.fs}</td><td>${x.mp||''}</td><td class="num">${gb(x.mb)}</td><td>${x.fmt?'✓':''}</td><td>${esc(x.lbl||'')}</td></tr>`).join('');
+  stage.querySelectorAll('#dt tr.row').forEach(r=>r.onclick=()=>{S.sel=+r.dataset.i;msg('');drawManual()});
+  const c=P[S.sel];$('#tA').disabled=!c||!c.free;$('#tD').disabled=!c||c.free;$('#tE').disabled=!c||c.free;
+  $('#tR').onclick=()=>{S.parts=ORIG();S.nextN=5;S.sel=-1;log('Reverteu partições');drawManual()};
+  $('#tD').onclick=()=>{const w=c.fs==='ntfs'&&c.lbl==='Windows 11'?'<p class="err" style="margin:.6em 0 0">Isto apaga o Windows 11 e todos os seus arquivos.</p>':c.fs==='fat32'?'<p class="err" style="margin:.6em 0 0">Esta é a partição EFI. Sem ela nenhum sistema inicia, a menos que você crie outra.</p>':'';
+   modal('Excluir partição?',`<p style="margin:0">Excluir <b>${c.d}</b> (${c.fs}, ${gb(c.mb)})?</p>${w}`,[{l:'Cancelar'},{l:'Excluir',c:'red',f:()=>{log('Excluiu '+c.d);P[S.sel]={free:true,mb:c.mb};normalize();S.sel=-1;drawManual()}}])};
+  $('#tA').onclick=()=>partDlg(null,c);$('#tE').onclick=()=>partDlg(c,null);
+  $('#nx').onclick=validateManual;
+}
+const MPS=['','/','/home','/boot','/boot/efi','/var','/srv'];
+function partDlg(p,free){const isNew=!p;const max=isNew?free.mb:p.mb;const minSz=Math.min(Math.floor(max),p&&p.ex&&!p.fmt&&p.fs!=='—'?p.used+1024:500);
+  const fsOpts=isNew?['ext4','btrfs','xfs','fat32','swap']:[...(p.ex?['manter ('+p.fs+')']:[]),'ext4','btrfs','xfs','fat32','swap','ntfs'];
+  const curFs=isNew?'ext4':(p.ex&&!p.fmt?'manter ('+p.fs+')':p.fs);
+  const m=modal(isNew?'Criar partição':'Editar '+p.d,`<div class="frm" style="grid-template-columns:minmax(0,9em) minmax(0,1fr)">
+   <label for="ps">Tamanho (MB)</label><input type="text" id="ps" inputmode="numeric" value="${Math.floor(max)}">
+   <label for="pf">Usar como</label><select id="pf">${fsOpts.map(o=>`<option ${o===curFs?'selected':''}>${o}</option>`).join('')}</select>
+   <label for="pm">Ponto de montagem</label><select id="pm">${MPS.map(o=>`<option value="${o}" ${(p?p.mp:'')===o?'selected':''}>${o||'(nenhum)'}</option>`).join('')}</select></div>
+   <div style="font-size:.85em;color:#666;margin-top:.6em">${isNew?'Máximo: '+gb(max):p.ex?`Atual: ${gb(p.mb)} · em uso: ${gb(p.used)}. Só é possível reduzir.`:'Só é possível reduzir.'}</div><div id="pe"></div>`,
+   [{l:'Cancelar'},{l:'OK',c:'p',f:mm=>{const sz=parseInt(mm.querySelector('#ps').value,10),fs=mm.querySelector('#pf').value,mp=mm.querySelector('#pm').value;const E=t=>{mm.querySelector('#pe').innerHTML=`<div class="err">${t}</div>`;return false};
+    if(!sz||sz>max)return E(`Digite um tamanho até ${Math.floor(max)} MB.`);if(sz<minSz)return E(`Mínimo ${minSz} MB${p&&p.ex?': a partição já tem '+gb(p.used)+' em uso':''}.`);
+    const keep=fs.startsWith('manter');const realFs=keep?p.fs:fs;
+    if(realFs==='swap'&&mp)return E('Swap não tem ponto de montagem.');if(mp==='/boot/efi'&&realFs!=='fat32')return E('/boot/efi precisa ser fat32.');
+    if(['/','/home','/boot','/var','/srv'].includes(mp)&&['ntfs','fat32'].includes(realFs))return E(`${mp} precisa de um sistema de arquivos Linux (ext4, btrfs ou xfs).`);
+    if(isNew){const np={d:'nvme0n1p'+S.nextN++,fs,mb:sz,used:0,mp,fmt:true,lbl:mp==='/'?'Ubuntu':''};const i=S.parts.indexOf(free);const rest=free.mb-sz;S.parts.splice(i,1,np,...(rest>=1?[{free:true,mb:rest}]:[]));log(`Criou ${np.d} ${fs} ${mp||''} ${gb(sz)}`)}
+    else{const rest=p.mb-sz;if(rest>0&&keep&&p.fs==='ntfs')log(`Reduziu ${p.d} (NTFS) para ${gb(sz)}`);p.mb=sz;if(!keep){p.fs=fs;p.fmt=true}p.mp=mp;
+     const i=S.parts.indexOf(p);if(rest>=1)S.parts.splice(i+1,0,{free:true,mb:rest});log(`Editou ${p.d}: ${p.fs}${p.fmt?' (formatar)':''} ${mp||'sem montagem'}`)}
+    normalize();S.sel=-1;drawManual()}}]);m.querySelector('#ps').focus()}
+function validateManual(){const P=S.parts.filter(x=>!x.free);const E=t=>msg(`<div class="err">${t}</div>`);
+  const mps=P.filter(x=>x.mp).map(x=>x.mp);const dup=mps.find((x,i)=>mps.indexOf(x)!==i);if(dup)return E(`O ponto de montagem ${dup} está em mais de uma partição.`);
+  const root=P.find(x=>x.mp==='/');if(!root)return E('Nenhuma partição em /. Crie ou edite uma partição ext4 com ponto de montagem /.');
+  if(root.mb<25600)return E(`A partição / tem ${gb(root.mb)}. O mínimo é 25 GB.`);
+  if(root.ex&&!root.fmt)return E('A partição / precisa ser formatada.');
+  const efi=P.find(x=>x.mp==='/boot/efi');if(!efi)return E('Falta a partição de sistema EFI. Edite nvme0n1p1 (fat32) e defina o ponto de montagem /boot/efi, sem formatar se quiser manter o Windows.');
+  const win=P.find(x=>x.lbl==='Windows 11'&&x.fs==='ntfs'&&!x.fmt);
+  const finish=()=>{S.dual=!!win;S.crypt='';S.layout=P.filter(x=>x.mp||x.fs==='swap'||x.fmt||x===win).map(x=>`${x.d} ${x.fs} ${gb(x.mb)}${x.mp?' em '+x.mp:''}${x.fmt?' (formatar)':x.mp?' (sem formatar)':''}${x===win?' · Windows mantido':''}`);
+   log('Particionamento manual confirmado');go('account')};
+  if(efi.fmt&&win)return modal('Formatar a partição EFI?','<p style="margin:0">A EFI guarda o carregador de boot do Windows. Formatá-la faz o <b>Windows deixar de iniciar</b> até ser reparado. Em dual boot, use a EFI sem formatar.</p>',[{l:'Voltar e corrigir'},{l:'Continuar mesmo assim',c:'red',f:()=>{log('Formatou a EFI com Windows presente');finish()}}]);
+  finish()}
+
+function restart(){fresh();log('Simulação iniciada');go('post')}
+document.querySelectorAll('#spd button').forEach(b=>b.onclick=()=>{S.speed=+b.dataset.s;document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',x===b));log('Velocidade '+b.dataset.s+'×')});
+$('#reset').onclick=restart;
+restart();
+</script>
+
+<footer class="lab-footer">Criado para demonstração em aula • Dados e dispositivos são fictícios<br>Todos os Direitos Reservados • <a href="https://teclabsinfo.com.br/" target="_blank" rel="noopener noreferrer">Teclabs Info</a> • <a href="https://sammyfreitas.github.io/portfolio/" target="_blank" rel="noopener noreferrer">Prof. Anthony Samuel Sobral de Freitas</a> • Set/26</footer><script>const theme=document.getElementById('theme');let selectedTheme='light';try{selectedTheme=localStorage.getItem('lab-theme')||localStorage.getItem('theme')||'light'}catch{}function setTheme(){document.documentElement.dataset.theme=selectedTheme;theme.textContent=selectedTheme==='dark'?'☀️':'🌙';const label=selectedTheme==='dark'?'Ativar tema claro':'Ativar tema escuro';theme.title=label;theme.setAttribute('aria-label',label);try{localStorage.setItem('lab-theme',selectedTheme)}catch{}}theme.onclick=()=>{selectedTheme=selectedTheme==='dark'?'light':'dark';setTheme()};setTheme();</script></body>
+</html>

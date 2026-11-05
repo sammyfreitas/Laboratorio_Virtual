@@ -1,4 +1,4 @@
-# 💻 Laboratório Virtual — Rufus, BIOS e UEFI
+# 💻 Laboratórios de Sistemas Operacionais — Teclabs Info
 
 Simulador educacional desenvolvido em **HTML, CSS e JavaScript** para aulas de Sistemas Operacionais, boot, mídias inicializáveis, BIOS Legacy e UEFI.
 
@@ -16,6 +16,9 @@ Simulador educacional desenvolvido em **HTML, CSS e JavaScript** para aulas de S
 | 💿 **Rufus** | ISO, GPT, MBR, FAT32, NTFS e mídia inicializável |
 | ⌨️ **BIOS Legacy** | CMOS, chipset, periféricos, energia, hardware e boot |
 | ⚙️ **UEFI** | Main, Advanced, Boot, Security, Secure Boot, TPM e Save & Exit |
+| **Instalação Ubuntu** | Boot, particionamento, dual boot e login |
+| **Instalação Windows 10** | Instalação personalizada e conta local, inspirado no 22H2 Pro |
+| **Instalação Windows 11** | Instalação personalizada e configuração inicial simplificada |
 
 O Rufus possui um seletor fictício de arquivos ISO de Linux Mint, Ubuntu, Fedora, Red Hat Enterprise Linux, Windows 7, Windows 10 e Windows 11. BIOS e UEFI permitem navegar e alterar diversas opções fictícias para fins didáticos.
 
@@ -73,3 +76,13 @@ Projeto independente e exclusivamente educacional. As interfaces são simulaçõ
 Criado para demonstração em aula • Dados e dispositivos são fictícios
 
 **Todos os Direitos Reservados • Professor Anthony Samuel Sobral de Freitas • Set/26**
+
+## Instaladores
+
+Os cartões da segunda linha seguem a ordem Ubuntu, Windows 10 e Windows 11. Incluem roteiro, registro de ações, controle de velocidade, reinício e botão de tema sol/lua. Os módulos são independentes e não recebem automaticamente as escolhas do Rufus ou do firmware.
+
+As interfaces são aproximações didáticas. Use senhas fictícias. O Windows 11 usa conta local como simplificação explícita. O Windows 10 é inspirado no 22H2 Pro. As opções do Ubuntu devem ser comparadas à mídia usada em aula.
+
+Arquivos: `instalacao-ubuntu.html`, `instalacao-windows10.html`, `instalacao-windows11.html`. As fontes externas possuem alternativas do sistema.
+
+Todos os Direitos Reservados • [Teclabs Info](https://teclabsinfo.com.br/) • [Prof. Anthony Samuel Sobral de Freitas](https://sammyfreitas.github.io/portfolio/) • Set/26
